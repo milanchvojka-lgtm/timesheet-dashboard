@@ -119,43 +119,67 @@ export function mapRawRow(
     return null
   }
 
-  // Extract fields with flexible column name matching
+  // Extract fields with flexible column name matching (includes Czech translations)
   const person_id = findValue(['person_id', 'personid', 'person', 'user_id', 'userid'])
-  const person_name = findValue(['person_name', 'personname', 'person', 'name', 'user', 'username'])
+  const person_name = findValue([
+    'person_name', 'personname', 'person', 'name', 'user', 'username',
+    'osoba' // Czech: Osoba
+  ])
   const person_email = findValue(['person_email', 'personemail', 'email', 'user_email'])
-  const project_id = findValue(['project_id', 'projectid', 'project'])
-  const project_name = findValue(['project_name', 'projectname', 'project'])
-  const activity_id = findValue(['activity_id', 'activityid', 'activity', 'task_id'])
-  const activity_name = findValue(['activity_name', 'activityname', 'activity', 'task', 'taskname'])
-  const date = findValue(['date', 'day', 'start_at', 'startat'])
-  const hours = findValue(['hours', 'duration', 'time', 'hours_tracked'])
-  const description = findValue(['description', 'note', 'notes', 'comment', 'comments'])
+  const project_id = findValue(['project_id', 'projectid'])
+  const project_name = findValue([
+    'project_name', 'projectname', 'project',
+    'projekt' // Czech: Projekt
+  ])
+  const client_name = findValue([
+    'client_name', 'clientname', 'client',
+    'klient' // Czech: Klient
+  ])
+  const activity_id = findValue(['activity_id', 'activityid'])
+  const activity_name = findValue([
+    'activity_name', 'activityname', 'activity', 'task', 'taskname',
+    'cinnost', 'činnost' // Czech: Činnost
+  ])
+  const task_name = findValue([
+    'task', 'task_name', 'taskname',
+    'ukol', 'úkol' // Czech: Úkol
+  ])
+  const date = findValue([
+    'date', 'day', 'start_at', 'startat',
+    'datum' // Czech: Datum
+  ])
+  const hours = findValue([
+    'hours', 'duration', 'time', 'hours_tracked',
+    'natrackovano', 'natrackováno' // Czech: Natrackováno
+  ])
+  const description = findValue([
+    'description', 'note', 'notes', 'comment', 'comments',
+    'popis' // Czech: Popis
+  ])
   const approved = findValue(['approved', 'status', 'is_approved'])
-  const billable = findValue(['billable', 'is_billable', 'billing'])
+  const billable = findValue([
+    'billable', 'is_billable', 'billing',
+    'placene', 'placené' // Czech: Placené
+  ])
 
-  // Validate required fields
-  if (!person_id) {
-    errors.push({ row: rowIndex, field: 'person_id', message: 'Person ID is required' })
-  }
+  // Validate required fields (names, not IDs, since Costlocker doesn't export IDs)
   if (!person_name) {
     errors.push({ row: rowIndex, field: 'person_name', message: 'Person name is required' })
-  }
-  if (!project_id) {
-    errors.push({ row: rowIndex, field: 'project_id', message: 'Project ID is required' })
   }
   if (!project_name) {
     errors.push({ row: rowIndex, field: 'project_name', message: 'Project name is required' })
   }
-  if (!activity_id) {
-    errors.push({ row: rowIndex, field: 'activity_id', message: 'Activity ID is required' })
+
+  // Activity name can come from either activity_name or task_name
+  const finalActivityName = activity_name || task_name
+  if (!finalActivityName) {
+    errors.push({ row: rowIndex, field: 'activity_name', message: 'Activity or Task name is required' })
   }
-  if (!activity_name) {
-    errors.push({ row: rowIndex, field: 'activity_name', message: 'Activity name is required' })
-  }
+
   if (!date) {
     errors.push({ row: rowIndex, field: 'date', message: 'Date is required' })
   }
-  if (hours === null || hours === undefined) {
+  if (hours === null || hours === undefined || String(hours).trim() === '') {
     errors.push({ row: rowIndex, field: 'hours', message: 'Hours is required' })
   }
 
@@ -164,8 +188,8 @@ export function mapRawRow(
     return { data: null, errors }
   }
 
-  // Parse and validate data types
-  const parsedPersonId = parseInt(String(person_id), 10)
+  // Generate IDs from names if not provided (Costlocker exports don't include IDs)
+  const parsedPersonId = person_id ? parseInt(String(person_id), 10) : generateIdFromString(String(person_name))
   if (isNaN(parsedPersonId)) {
     errors.push({
       row: rowIndex,
@@ -175,7 +199,7 @@ export function mapRawRow(
     })
   }
 
-  const parsedProjectId = parseInt(String(project_id), 10)
+  const parsedProjectId = project_id ? parseInt(String(project_id), 10) : generateIdFromString(String(project_name))
   if (isNaN(parsedProjectId)) {
     errors.push({
       row: rowIndex,
@@ -185,7 +209,7 @@ export function mapRawRow(
     })
   }
 
-  const parsedActivityId = parseInt(String(activity_id), 10)
+  const parsedActivityId = activity_id ? parseInt(String(activity_id), 10) : generateIdFromString(String(finalActivityName))
   if (isNaN(parsedActivityId)) {
     errors.push({
       row: rowIndex,
@@ -195,7 +219,9 @@ export function mapRawRow(
     })
   }
 
-  const parsedHours = parseFloat(String(hours))
+  // Parse hours (handle both comma and dot as decimal separator)
+  const hoursStr = String(hours).replace(',', '.').trim()
+  const parsedHours = parseFloat(hoursStr)
   if (isNaN(parsedHours) || parsedHours < 0) {
     errors.push({
       row: rowIndex,
@@ -228,7 +254,7 @@ export function mapRawRow(
     project_id: parsedProjectId,
     project_name: String(project_name),
     activity_id: parsedActivityId,
-    activity_name: String(activity_name),
+    activity_name: String(finalActivityName),
     date: parsedDate!,
     hours: parsedHours,
     description: description ? String(description) : undefined,
@@ -240,13 +266,36 @@ export function mapRawRow(
 }
 
 /**
+ * Generate a numeric ID from a string using a simple hash
+ * Ensures consistent IDs for the same string
+ */
+function generateIdFromString(str: string): number {
+  let hash = 0
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i)
+    hash = ((hash << 5) - hash) + char
+    hash = hash & hash // Convert to 32-bit integer
+  }
+  return Math.abs(hash)
+}
+
+/**
  * Parse date string to YYYY-MM-DD format
- * Handles various date formats
+ * Handles various date formats including Czech format (DD. MM. YYYY)
  */
 function parseDate(dateStr: string): string | null {
   // Already in YYYY-MM-DD format
   if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
     return dateStr
+  }
+
+  // Czech format: DD. MM. YYYY (e.g., "29. 11. 2025")
+  const czechMatch = dateStr.match(/^(\d{1,2})\.\s*(\d{1,2})\.\s*(\d{4})$/)
+  if (czechMatch) {
+    const [, day, month, year] = czechMatch
+    const paddedDay = day.padStart(2, '0')
+    const paddedMonth = month.padStart(2, '0')
+    return `${year}-${paddedMonth}-${paddedDay}`
   }
 
   // Try parsing as Date
