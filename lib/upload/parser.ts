@@ -53,9 +53,11 @@ export async function parseExcel(file: File): Promise<RawTimesheetRow[]> {
     const sheet = workbook.Sheets[sheetName]
 
     // Convert to JSON
+    // Use raw: false to get formatted strings instead of Excel serial dates
     const jsonData = XLSX.utils.sheet_to_json(sheet, {
-      raw: false, // Keep as strings for consistency
-      defval: null, // Use null for empty cells
+      raw: false, // Convert to formatted strings
+      defval: '', // Use empty string for empty cells
+      dateNF: 'd. m. yyyy', // Format dates as Czech format
     }) as RawTimesheetRow[]
 
     return jsonData
@@ -237,9 +239,20 @@ export function mapRawRow(
     errors.push({
       row: rowIndex,
       field: 'date',
-      message: 'Date must be in YYYY-MM-DD format',
+      message: 'Date must be in valid format (YYYY-MM-DD or DD. MM. YYYY)',
       value: date,
     })
+  } else {
+    // Additional validation: check year is reasonable (between 1900 and 2100)
+    const year = parseInt(parsedDate.split('-')[0], 10)
+    if (year < 1900 || year > 2100) {
+      errors.push({
+        row: rowIndex,
+        field: 'date',
+        message: `Invalid year in date: ${year}. Expected year between 1900-2100`,
+        value: date,
+      })
+    }
   }
 
   if (errors.length > 0) {
@@ -281,16 +294,23 @@ function generateIdFromString(str: string): number {
 
 /**
  * Parse date string to YYYY-MM-DD format
- * Handles various date formats including Czech format (DD. MM. YYYY)
+ * Handles various date formats including Czech format (DD. MM. YYYY) and Excel serial dates
  */
 function parseDate(dateStr: string): string | null {
+  // Empty or null
+  if (!dateStr || dateStr.trim() === '') {
+    return null
+  }
+
+  const trimmed = String(dateStr).trim()
+
   // Already in YYYY-MM-DD format
-  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
-    return dateStr
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    return trimmed
   }
 
   // Czech format: DD. MM. YYYY (e.g., "29. 11. 2025")
-  const czechMatch = dateStr.match(/^(\d{1,2})\.\s*(\d{1,2})\.\s*(\d{4})$/)
+  const czechMatch = trimmed.match(/^(\d{1,2})\.\s*(\d{1,2})\.\s*(\d{4})$/)
   if (czechMatch) {
     const [, day, month, year] = czechMatch
     const paddedDay = day.padStart(2, '0')
@@ -298,10 +318,40 @@ function parseDate(dateStr: string): string | null {
     return `${year}-${paddedMonth}-${paddedDay}`
   }
 
+  // Excel serial date (number of days since 1900-01-01)
+  // If it's a pure number, treat as Excel serial date
+  const asNumber = parseFloat(trimmed)
+  if (!isNaN(asNumber) && /^\d+(\.\d+)?$/.test(trimmed)) {
+    try {
+      // Excel serial date conversion
+      // Excel's epoch starts at 1900-01-01 (but actually 1900-01-00 due to leap year bug)
+      const excelEpoch = new Date(1899, 11, 30) // December 30, 1899
+      const date = new Date(excelEpoch.getTime() + asNumber * 86400000)
+
+      if (!isNaN(date.getTime())) {
+        const year = date.getFullYear()
+        // Sanity check
+        if (year >= 1900 && year <= 2100) {
+          return date.toISOString().split('T')[0]
+        }
+      }
+    } catch (e) {
+      // Fall through to try as regular date
+    }
+  }
+
   // Try parsing as Date
-  const date = new Date(dateStr)
-  if (!isNaN(date.getTime())) {
-    return date.toISOString().split('T')[0]
+  try {
+    const date = new Date(trimmed)
+    if (!isNaN(date.getTime())) {
+      const year = date.getFullYear()
+      // Sanity check
+      if (year >= 1900 && year <= 2100) {
+        return date.toISOString().split('T')[0]
+      }
+    }
+  } catch (e) {
+    // Ignore
   }
 
   return null
