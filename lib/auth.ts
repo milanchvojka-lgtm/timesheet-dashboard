@@ -1,20 +1,21 @@
 import NextAuth from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
-import { SupabaseAdapter } from "@auth/supabase-adapter"
+import { createServerClient } from "@/lib/supabase/server"
 
 /**
  * NextAuth.js v5 Configuration
  *
  * Features:
  * - Google OAuth with @2fresh.cz domain restriction
- * - Supabase session storage via adapter
- * - Custom callbacks for user synchronization
+ * - JWT session storage (no database adapter needed)
+ * - Custom callbacks for user synchronization with Supabase
  */
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: SupabaseAdapter({
-    url: process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    secret: process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  }),
+  // Use JWT sessions instead of database sessions for now
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
 
   providers: [
     GoogleProvider({
@@ -37,11 +38,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     error: "/login",
   },
 
-  session: {
-    strategy: "database",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
-  },
-
   callbacks: {
     /**
      * Restrict sign-in to @2fresh.cz email addresses only
@@ -60,29 +56,55 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         return false
       }
 
+      // Sync user to Supabase users table
+      try {
+        const supabase = createServerClient()
+
+        // Upsert user into Supabase
+        await supabase
+          .from("users")
+          .upsert({
+            email: email,
+            name: user.name,
+            avatar_url: user.image,
+          }, {
+            onConflict: 'email'
+          })
+      } catch (error) {
+        console.error("Error syncing user to Supabase:", error)
+        // Don't block sign-in if sync fails
+      }
+
       return true
+    },
+
+    /**
+     * Add user data to JWT token
+     */
+    async jwt({ token, user, account, profile }) {
+      if (user) {
+        token.id = user.id
+        token.email = user.email
+        token.name = user.name
+        token.picture = user.image
+      }
+      return token
     },
 
     /**
      * Add user ID and team member status to session
      */
-    async session({ session, user }) {
+    async session({ session, token }) {
       if (session.user) {
-        session.user.id = user.id
+        session.user.id = token.sub!
+        session.user.email = token.email as string
+        session.user.name = token.name as string
+        session.user.image = token.picture as string
+
         // Check if user is a team member
-        session.user.isTeamMember = await checkTeamMember(user.email)
+        session.user.isTeamMember = await checkTeamMember(token.email as string)
       }
       return session
-    },
-
-    /**
-     * Sync user data with our users table
-     */
-    async jwt({ token, user, account, profile }) {
-      if (user) {
-        token.id = user.id
-      }
-      return token
     },
   },
 
