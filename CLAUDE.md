@@ -150,21 +150,29 @@ export async function GET(request: NextRequest) {
 ### NextAuth.js Configuration
 - **Provider:** Google OAuth
 - **Domain restriction:** Only `@2fresh.cz` emails
-- **Session storage:** Database (Supabase)
-- **Config location:** `app/api/auth/[...nextauth]/route.ts`
+- **Session storage:** JWT (stateless tokens)
+- **Config location:** `lib/auth.ts`
+- **User sync:** Manual sync to Supabase in `signIn` callback
+
+**Why JWT instead of database sessions?**
+- Simpler setup with NextAuth v5 + Supabase
+- Avoids adapter compatibility issues
+- Serverless-friendly (no database writes per request)
+- Users are still synced to Supabase for app data
 
 ### Protected Routes
 ```typescript
 // app/(dashboard)/layout.tsx
-import { getServerSession } from 'next-auth'
+import { auth } from '@/lib/auth'
+import { redirect } from 'next/navigation'
 
 export default async function DashboardLayout({ children }) {
-  const session = await getServerSession()
-  
+  const session = await auth()
+
   if (!session) {
     redirect('/login')
   }
-  
+
   return <>{children}</>
 }
 ```
