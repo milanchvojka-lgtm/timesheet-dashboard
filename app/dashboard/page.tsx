@@ -1,7 +1,7 @@
 import { getServerSession, getUserData } from "@/lib/auth-utils"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { LogOut, User } from "lucide-react"
+import { LogoutButton } from "@/components/auth/logout-button"
+import { User } from "lucide-react"
 
 /**
  * Dashboard Home Page
@@ -20,12 +20,7 @@ export default async function DashboardPage() {
           <h1 className="text-3xl font-bold">Timesheet Analytics</h1>
           <p className="text-muted-foreground">Welcome back, {session?.user?.name}</p>
         </div>
-        <form action="/api/auth/signout" method="POST">
-          <Button variant="outline" type="submit">
-            <LogOut className="mr-2 h-4 w-4" />
-            Sign Out
-          </Button>
-        </form>
+        <LogoutButton />
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

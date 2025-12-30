@@ -1,5 +1,4 @@
 import { auth } from "@/lib/auth"
-import { createServerClient } from "@/lib/supabase/server"
 
 /**
  * Get the current user session (server-side only)
@@ -46,7 +45,8 @@ export async function checkTeamMember(
   if (!email) return false
 
   try {
-    const supabase = createServerClient()
+    const { createServerAdminClient } = await import("@/lib/supabase/server")
+    const supabase = createServerAdminClient()
 
     const { data, error } = await supabase
       .from("users")
@@ -89,7 +89,8 @@ export async function getUserData(email: string | null | undefined) {
   if (!email) return null
 
   try {
-    const supabase = createServerClient()
+    const { createServerAdminClient } = await import("@/lib/supabase/server")
+    const supabase = createServerAdminClient()
 
     const { data, error } = await supabase
       .from("users")

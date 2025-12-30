@@ -1,6 +1,6 @@
 import NextAuth from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
-import { createServerClient } from "@/lib/supabase/server"
+import { createServerAdminClient } from "@/lib/supabase/server"
 
 /**
  * NextAuth.js v5 Configuration
@@ -58,10 +58,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
       // Sync user to Supabase users table
       try {
-        const supabase = createServerClient()
+        const supabase = createServerAdminClient()
 
-        // Upsert user into Supabase
-        await supabase
+        // Upsert user into Supabase (using admin client to bypass RLS)
+        const { error: upsertError } = await supabase
           .from("users")
           .upsert({
             email: email,
@@ -70,6 +70,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           }, {
             onConflict: 'email'
           })
+
+        if (upsertError) {
+          console.error("Error upserting user to Supabase:", upsertError)
+        }
       } catch (error) {
         console.error("Error syncing user to Supabase:", error)
         // Don't block sign-in if sync fails
@@ -138,8 +142,8 @@ async function checkTeamMember(email: string | null | undefined): Promise<boolea
   if (!email) return false
 
   try {
-    const { createServerClient } = await import("@/lib/supabase/server")
-    const supabase = createServerClient()
+    const { createServerAdminClient } = await import("@/lib/supabase/server")
+    const supabase = createServerAdminClient()
 
     const { data, error } = await supabase
       .from("users")
