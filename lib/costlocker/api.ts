@@ -63,12 +63,18 @@ async function apiGet<T>(
   params?: Record<string, string | number | boolean>
 ): Promise<T> {
   // Build URL with query parameters
-  const url = new URL(endpoint, COSTLOCKER_API_URL)
+  // Ensure base URL has trailing slash and endpoint doesn't start with slash
+  const baseUrl = COSTLOCKER_API_URL.endsWith('/') ? COSTLOCKER_API_URL : `${COSTLOCKER_API_URL}/`
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint
+  const url = new URL(cleanEndpoint, baseUrl)
+
   if (params) {
     Object.entries(params).forEach(([key, value]) => {
       url.searchParams.append(key, String(value))
     })
   }
+
+  console.log(`[Costlocker] Fetching: ${url.toString()}`)
 
   try {
     const response = await fetch(url.toString(), {
@@ -78,6 +84,7 @@ async function apiGet<T>(
         Accept: 'application/json',
         'Content-Type': 'application/json',
       },
+      redirect: 'follow', // Follow redirects automatically
       // Cache for 5 minutes to reduce API calls
       next: { revalidate: 300 },
     })
@@ -90,6 +97,12 @@ async function apiGet<T>(
         errorData = await response.json()
       } catch {
         // If response is not JSON, use status text
+      }
+
+      // Log redirect URL if it's a 301/302
+      if (response.status === 301 || response.status === 302) {
+        const redirectUrl = response.headers.get('location')
+        console.error(`[Costlocker] Redirect detected. Original: ${url.toString()}, Redirect to: ${redirectUrl}`)
       }
 
       throw new CostlockerAPIError(
