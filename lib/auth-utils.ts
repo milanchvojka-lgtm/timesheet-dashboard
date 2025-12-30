@@ -1,5 +1,4 @@
-import { getServerSession as getNextAuthSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { auth } from "@/lib/auth"
 import { createServerClient } from "@/lib/supabase/server"
 
 /**
@@ -19,7 +18,7 @@ import { createServerClient } from "@/lib/supabase/server"
  * ```
  */
 export async function getServerSession() {
-  return await getNextAuthSession(authOptions)
+  return await auth()
 }
 
 /**

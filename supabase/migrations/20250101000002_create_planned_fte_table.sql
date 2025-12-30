@@ -2,6 +2,9 @@
 -- Stores planned FTE (Full-Time Equivalent) values for team members
 -- Supports temporal tracking with valid_from/valid_to dates
 
+-- Enable btree_gist extension for UUID exclusion constraints
+CREATE EXTENSION IF NOT EXISTS btree_gist;
+
 CREATE TABLE IF NOT EXISTS planned_fte (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,

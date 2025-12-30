@@ -1,4 +1,4 @@
-import { NextAuthOptions } from "next-auth"
+import NextAuth from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
 import { SupabaseAdapter } from "@auth/supabase-adapter"
 
@@ -10,7 +10,7 @@ import { SupabaseAdapter } from "@auth/supabase-adapter"
  * - Supabase session storage via adapter
  * - Custom callbacks for user synchronization
  */
-export const authOptions: NextAuthOptions = {
+export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: SupabaseAdapter({
     url: process.env.NEXT_PUBLIC_SUPABASE_URL!,
     secret: process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -102,7 +102,7 @@ export const authOptions: NextAuthOptions = {
   },
 
   debug: process.env.NODE_ENV === "development",
-}
+})
 
 /**
  * Check if a user is a design team member
