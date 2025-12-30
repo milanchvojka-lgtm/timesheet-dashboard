@@ -83,25 +83,43 @@ hooks/                  # Custom React hooks
 ## Database & Data Access
 
 ### Supabase Client
-- **Server-side:** Use `createServerClient()` from `@/lib/supabase/server`
+
+**IMPORTANT: This app uses NextAuth (not Supabase Auth), so RLS policies don't work with regular client.**
+
+- **For auth/user operations:** Use `createServerAdminClient()` - REQUIRED for NextAuth setup
+- **For public data:** Use `createServerClient()` - when RLS allows public access
 - **Client-side:** Use `createBrowserClient()` from `@/lib/supabase/client`
-- **Never expose service role key** - use in API routes only
+- **Never expose service role key** - only use admin client server-side
 
 ### Query Patterns
 ```typescript
-// ✅ Server Component
+// ✅ Auth/User queries - MUST use admin client
+import { createServerAdminClient } from '@/lib/supabase/server'
+
+const supabase = createServerAdminClient()
+const { data, error } = await supabase
+  .from('users')
+  .select('*')
+  .eq('email', email)
+
+// ✅ Public data queries - can use regular client IF RLS allows
 import { createServerClient } from '@/lib/supabase/server'
 
 const supabase = createServerClient()
 const { data, error } = await supabase
-  .from('planned_fte')
+  .from('public_settings')
   .select('*')
-  .eq('valid_to', null)
 
 // ✅ Client Component (via API route)
 const response = await fetch('/api/admin/fte')
 const data = await response.json()
 ```
+
+**Why admin client is needed:**
+- NextAuth manages its own sessions via JWT
+- Supabase RLS checks `auth.uid()` which only exists with Supabase Auth
+- Without Supabase Auth, RLS blocks everything
+- Admin client bypasses RLS completely
 
 ### Database Schema
 Tables defined in `supabase/migrations/`:
@@ -160,6 +178,35 @@ export async function GET(request: NextRequest) {
 - Serverless-friendly (no database writes per request)
 - Users are still synced to Supabase for app data
 
+### CRITICAL: Always Use Admin Client for Database Operations
+
+**When using NextAuth (not Supabase Auth), ALWAYS use `createServerAdminClient()` for database operations:**
+
+```typescript
+// ✅ CORRECT - Use admin client
+import { createServerAdminClient } from '@/lib/supabase/server'
+
+const supabase = createServerAdminClient()
+const { data } = await supabase.from('users').select('*')
+
+// ❌ WRONG - Don't use regular client with NextAuth
+import { createServerClient } from '@/lib/supabase/server'
+const supabase = createServerClient()
+// This will fail due to RLS policies!
+```
+
+**Why?**
+- NextAuth uses its own session management (JWT or database)
+- Supabase RLS policies check `auth.uid()` which is only set by Supabase Auth
+- Since we're not using Supabase Auth, RLS blocks all regular client operations
+- Admin client bypasses RLS and has full access
+
+**Where to use admin client:**
+- `lib/auth.ts` - User sync in `signIn` callback
+- `lib/auth.ts` - `checkTeamMember()` function
+- `lib/auth-utils.ts` - All helper functions (`getUserData`, `checkTeamMember`, etc.)
+- Any server component or API route that queries user data
+
 ### Protected Routes
 ```typescript
 // app/(dashboard)/layout.tsx
@@ -184,6 +231,53 @@ const isTeamMember = await checkTeamMember(session.user.email)
 if (!isTeamMember) {
   return <Unauthorized />
 }
+```
+
+### User Logout (NextAuth v5)
+
+**Always use server actions for logout** - form POST causes CSRF errors:
+
+```typescript
+// ✅ CORRECT - Server action
+// app/actions/auth.ts
+"use server"
+import { signOut } from "@/lib/auth"
+
+export async function handleSignOut() {
+  await signOut({ redirectTo: "/login" })
+}
+
+// components/auth/logout-button.tsx
+"use client"
+import { handleSignOut } from "@/app/actions/auth"
+
+export function LogoutButton() {
+  return (
+    <Button onClick={() => handleSignOut()}>
+      Sign Out
+    </Button>
+  )
+}
+
+// ❌ WRONG - Form POST causes CSRF errors
+<form action="/api/auth/signout" method="POST">
+  <Button type="submit">Sign Out</Button>
+</form>
+```
+
+### Live Data vs Cached Data
+
+**JWT sessions cache user data** - changes in database won't appear until re-login
+
+**Solution:** Fetch fresh data on every request using admin client:
+
+```typescript
+// Dashboard shows live data
+const session = await auth() // JWT session (cached)
+const userData = await getUserData(session.user.email) // Fresh from DB
+
+// getUserData uses admin client, so data is always current
+// Changes in Supabase appear immediately on page refresh
 ```
 
 ---
@@ -572,9 +666,13 @@ export function calculateFTE(
 - ❌ **Never hardcode** - API keys, tokens, secrets
 - ❌ **Never use `any`** - always proper TypeScript types
 - ❌ **Never skip validation** - always validate input
+- ❌ **Never use `createServerClient()` for database ops** - always use `createServerAdminClient()` with NextAuth
+- ❌ **Never use form POST for logout** - always use server actions with NextAuth v5
 - ✅ **Always use Server Components** - unless interactivity needed
 - ✅ **Always handle errors** - graceful degradation
 - ✅ **Always test** - verify functionality
+- ✅ **Always use admin client** - for all Supabase queries when using NextAuth
+- ✅ **Always fetch fresh data** - use `getUserData()` for live database values, not JWT cache
 
 ---
 
