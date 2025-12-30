@@ -1,0 +1,21 @@
+Person ID,Person Name,Person Email,Project ID,Project Name,Activity ID,Activity Name,Date,Hours,Description,Approved,Billable
+1001,Jan Novák,jan.novak@2fresh.cz,5001,Design tým OPS_2025,7001,UX Research,2025-01-15,4.5,User interviews for new feature,true,true
+1001,Jan Novák,jan.novak@2fresh.cz,5001,Design tým OPS_2025,7002,UI Design,2025-01-15,3.5,Wireframes and mockups,true,true
+1002,Petra Svobodová,petra.svobodova@2fresh.cz,5002,Design tým Interní_2025,7003,Design System,2025-01-15,8,Component library updates,true,false
+1003,Tomáš Dvořák,tomas.dvorak@2fresh.cz,5003,Design tým R&D_2025,7004,Research,2025-01-15,6,AI tools exploration,true,false
+1001,Jan Novák,jan.novak@2fresh.cz,5001,Design tým OPS_2025,7005,Reviews,2025-01-16,2,Design review session,true,true
+1002,Petra Svobodová,petra.svobodova@2fresh.cz,5002,Design tým Interní_2025,7006,Hiring,2025-01-16,3,Interview candidates,true,false
+1003,Tomáš Dvořák,tomas.dvorak@2fresh.cz,5004,Design tým Guiding_2025,7007,Mentoring,2025-01-16,4,Team mentoring session,true,false
+1004,Marie Nováková,marie.novakova@2fresh.cz,5005,Design tým PR_2025,7008,Content Creation,2025-01-16,6.5,Social media content design,true,true
+1001,Jan Novák,jan.novak@2fresh.cz,5001,Design tým OPS_2025,7009,Jobs,2025-01-17,1.5,Job posting updates,true,true
+1002,Petra Svobodová,petra.svobodova@2fresh.cz,5002,Design tým Interní_2025,7010,Team Meeting,2025-01-17,1,Weekly design sync,true,false
+1003,Tomáš Dvořák,tomas.dvorak@2fresh.cz,5003,Design tým R&D_2025,7011,Prototyping,2025-01-17,7,Interactive prototype development,true,false
+1004,Marie Nováková,marie.novakova@2fresh.cz,5006,Design tým UX Maturity_2025,7012,UX Audit,2025-01-17,5.5,Product UX evaluation,true,true
+1001,Jan Novák,jan.novak@2fresh.cz,5001,Design tým OPS_2025,7001,UX Research,2025-01-18,4,Usability testing sessions,true,true
+1002,Petra Svobodová,petra.svobodova@2fresh.cz,5002,Design tým Interní_2025,7003,Design System,2025-01-18,8,Documentation updates,true,false
+1003,Tomáš Dvořák,tomas.dvorak@2fresh.cz,5003,Design tým R&D_2025,7004,Research,2025-01-18,6.5,Competitive analysis,true,false
+1004,Marie Nováková,marie.novakova@2fresh.cz,5005,Design tým PR_2025,7008,Content Creation,2025-01-18,7,Brand guidelines design,true,true
+1001,Jan Novák,jan.novak@2fresh.cz,5001,Design tým OPS_2025,7002,UI Design,2025-01-19,6,High-fidelity designs,true,true
+1002,Petra Svobodová,petra.svobodova@2fresh.cz,5002,Design tým Interní_2025,7013,Code Review,2025-01-19,2.5,Component PR reviews,true,false
+1003,Tomáš Dvořák,tomas.dvorak@2fresh.cz,5004,Design tým Guiding_2025,7007,Mentoring,2025-01-19,3.5,Design workshop facilitation,true,false
+1004,Marie Nováková,marie.novakova@2fresh.cz,5006,Design tým UX Maturity_2025,7012,UX Audit,2025-01-19,6,Recommendations report,true,true
