@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
 import { requireTeamMember } from '@/lib/auth-utils'
 import { parseAndMapFile } from '@/lib/upload/parser'
 import { importTimesheetData } from '@/lib/upload/importer'
@@ -108,7 +107,7 @@ export async function POST(request: NextRequest) {
       filename: file.name,
       fileSize: file.size,
       fileType,
-      uploadedByEmail: session.user.email,
+      uploadedByEmail: session.user.email || '',
       uploadedByName: session.user.name || null,
     })
 

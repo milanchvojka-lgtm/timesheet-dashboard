@@ -6,6 +6,7 @@ import {
   getUnpairedEntries,
   calculateQualityScore,
   type ActivityKeyword,
+  type CategorizedEntry,
 } from '../activity-pairing'
 
 describe('Activity Categorization', () => {
@@ -269,34 +270,34 @@ describe('Activity Categorization', () => {
 
   describe('calculateQualityScore', () => {
     it('should calculate quality score correctly', () => {
-      const mockCategorized = [
-        { id: '1', category: 'OPS_Hiring' as const } as any,
-        { id: '2', category: 'OPS_Jobs' as const } as any,
-        { id: '3', category: 'Unpaired' as const } as any,
-        { id: '4', category: 'Unpaired' as const } as any,
+      const mockCategorized: Partial<CategorizedEntry>[] = [
+        { id: '1', category: 'OPS_Hiring' as const },
+        { id: '2', category: 'OPS_Jobs' as const },
+        { id: '3', category: 'Unpaired' as const },
+        { id: '4', category: 'Unpaired' as const },
       ]
 
-      const score = calculateQualityScore(mockCategorized)
+      const score = calculateQualityScore(mockCategorized as CategorizedEntry[])
       expect(score).toBe(50) // 2 / 4 * 100
     })
 
     it('should return 100 for all paired', () => {
-      const mockCategorized = [
-        { id: '1', category: 'OPS_Hiring' as const } as any,
-        { id: '2', category: 'OPS_Jobs' as const } as any,
+      const mockCategorized: Partial<CategorizedEntry>[] = [
+        { id: '1', category: 'OPS_Hiring' as const },
+        { id: '2', category: 'OPS_Jobs' as const },
       ]
 
-      const score = calculateQualityScore(mockCategorized)
+      const score = calculateQualityScore(mockCategorized as CategorizedEntry[])
       expect(score).toBe(100)
     })
 
     it('should return 0 for all unpaired', () => {
-      const mockCategorized = [
-        { id: '1', category: 'Unpaired' as const } as any,
-        { id: '2', category: 'Unpaired' as const } as any,
+      const mockCategorized: Partial<CategorizedEntry>[] = [
+        { id: '1', category: 'Unpaired' as const },
+        { id: '2', category: 'Unpaired' as const },
       ]
 
-      const score = calculateQualityScore(mockCategorized)
+      const score = calculateQualityScore(mockCategorized as CategorizedEntry[])
       expect(score).toBe(0)
     })
 

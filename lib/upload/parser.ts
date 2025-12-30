@@ -6,7 +6,6 @@ import {
   ValidationError,
   CSVParserOptions,
 } from '@/types/upload.types'
-import { mapProjectCategory } from '@/config/projects'
 
 /**
  * Parse CSV file to array of objects
@@ -105,13 +104,13 @@ export function mapRawRow(
   const errors: ValidationError[] = []
 
   // Normalize all keys
-  const normalized: Record<string, any> = {}
+  const normalized: Record<string, string | number | boolean | null | undefined> = {}
   Object.keys(raw).forEach((key) => {
     normalized[normalizeColumnName(key)] = raw[key]
   })
 
   // Helper to find value by multiple possible key names
-  const findValue = (possibleKeys: string[]): any => {
+  const findValue = (possibleKeys: string[]): string | number | boolean | null | undefined => {
     for (const key of possibleKeys) {
       const normalizedKey = normalizeColumnName(key)
       if (normalized[normalizedKey] !== undefined && normalized[normalizedKey] !== null) {
@@ -133,10 +132,8 @@ export function mapRawRow(
     'project_name', 'projectname', 'project',
     'projekt' // Czech: Projekt
   ])
-  const client_name = findValue([
-    'client_name', 'clientname', 'client',
-    'klient' // Czech: Klient
-  ])
+  // Client name is available in CSV but not currently used
+  // findValue(['client_name', 'clientname', 'client', 'klient'])
   const activity_id = findValue(['activity_id', 'activityid'])
   const activity_name = findValue([
     'activity_name', 'activityname', 'activity', 'task', 'taskname',
@@ -335,7 +332,7 @@ function parseDate(dateStr: string): string | null {
           return date.toISOString().split('T')[0]
         }
       }
-    } catch (e) {
+    } catch {
       // Fall through to try as regular date
     }
   }
@@ -350,7 +347,7 @@ function parseDate(dateStr: string): string | null {
         return date.toISOString().split('T')[0]
       }
     }
-  } catch (e) {
+  } catch {
     // Ignore
   }
 
@@ -360,7 +357,7 @@ function parseDate(dateStr: string): string | null {
 /**
  * Parse boolean from various formats
  */
-function parseBoolean(value: any): boolean {
+function parseBoolean(value: string | number | boolean | null | undefined): boolean {
   if (typeof value === 'boolean') return value
   if (typeof value === 'string') {
     const lower = value.toLowerCase().trim()

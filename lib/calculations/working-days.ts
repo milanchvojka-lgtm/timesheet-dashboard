@@ -34,7 +34,6 @@ export function calculateWorkingDays(year: number, month: number): WorkingDaysRe
   const hd = new Holidays('CZ')
 
   // Get first and last day of the month
-  const firstDay = new Date(year, month - 1, 1)
   const lastDay = new Date(year, month, 0) // Day 0 = last day of previous month
   const totalDays = lastDay.getDate()
 

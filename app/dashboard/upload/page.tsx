@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Separator } from "@/components/ui/separator"
-import { CheckCircle2, XCircle, AlertTriangle, Clock, FileText, Calendar, User } from "lucide-react"
+import { CheckCircle2, XCircle, Clock, FileText, Calendar, User } from "lucide-react"
 
 interface UploadResult {
   success: boolean

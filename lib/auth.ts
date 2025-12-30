@@ -42,7 +42,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     /**
      * Restrict sign-in to @2fresh.cz email addresses only
      */
-    async signIn({ user, account, profile }) {
+    async signIn({ user, profile }) {
       const email = user.email || profile?.email
 
       if (!email) {
@@ -85,7 +85,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     /**
      * Add user data to JWT token
      */
-    async jwt({ token, user, account, profile }) {
+    async jwt({ token, user }) {
       if (user) {
         token.id = user.id
         token.email = user.email
@@ -119,7 +119,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async signIn({ user }) {
       if (user.email) {
         // Update is_team_member status in Supabase
-        const isTeamMember = await checkTeamMember(user.email)
+        await checkTeamMember(user.email)
 
         // You can add additional logic here to update the user record
         // For example, syncing with Costlocker API to get person_id

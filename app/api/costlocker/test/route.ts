@@ -1,5 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { NextResponse } from 'next/server'
 import { requireTeamMember } from '@/lib/auth-utils'
 import {
   testCostlockerConnection,
@@ -23,7 +22,7 @@ import {
  * - 401: Unauthorized (not logged in or not a team member)
  * - 500: Connection failed
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // 1. Check authentication and team member status
     const session = await requireTeamMember()

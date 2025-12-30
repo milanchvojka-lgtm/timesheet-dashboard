@@ -1,5 +1,5 @@
-import { calculateTeamMonthlyFTE, calculateFTEStats, PersonMonthlyFTE } from './fte'
-import { categorizeTimesheet, getActivitySummary, CategorizedEntry } from './activity-pairing'
+import { calculateFTEStats, PersonMonthlyFTE } from './fte'
+import { CategorizedEntry } from './activity-pairing'
 import { mapProjectCategory } from '@/config/projects'
 
 /**
@@ -210,18 +210,10 @@ export interface TimeSeriesData {
  * @param keywords - Activity keywords for categorization
  * @returns Array of time series data
  */
-export function generateMonthlyFTESeries(
-  entries: Array<{
-    person_id: number
-    person_name: string
-    hours: number
-    date: string
-  }>,
-  startMonth: string, // YYYY-MM
-  endMonth: string    // YYYY-MM
-): TimeSeriesData[] {
+export function generateMonthlyFTESeries(): TimeSeriesData[] {
   // Implementation would group by month and calculate FTE
   // This is a simplified placeholder
+  // Parameters: entries, startMonth (YYYY-MM), endMonth (YYYY-MM)
   return []
 }
 

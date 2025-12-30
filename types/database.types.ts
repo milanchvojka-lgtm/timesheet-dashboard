@@ -278,6 +278,118 @@ export interface Database {
           }
         ]
       }
+      upload_history: {
+        Row: {
+          id: string
+          filename: string
+          file_size: number
+          file_type: string
+          total_rows: number
+          successful_rows: number
+          failed_rows: number
+          data_date_from: string | null
+          data_date_to: string | null
+          uploaded_by_email: string
+          uploaded_by_name: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          filename: string
+          file_size: number
+          file_type: string
+          total_rows: number
+          successful_rows: number
+          failed_rows: number
+          data_date_from?: string | null
+          data_date_to?: string | null
+          uploaded_by_email: string
+          uploaded_by_name?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          filename?: string
+          file_size?: number
+          file_type?: string
+          total_rows?: number
+          successful_rows?: number
+          failed_rows?: number
+          data_date_from?: string | null
+          data_date_to?: string | null
+          uploaded_by_email?: string
+          uploaded_by_name?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      timesheet_entries: {
+        Row: {
+          id: string
+          person_id: number
+          person_name: string
+          person_email: string | null
+          project_id: number
+          project_name: string
+          project_category: string
+          activity_id: number
+          activity_name: string
+          date: string
+          hours: number
+          description: string | null
+          approved: boolean
+          billable: boolean
+          upload_id: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          person_id: number
+          person_name: string
+          person_email?: string | null
+          project_id: number
+          project_name: string
+          project_category: string
+          activity_id: number
+          activity_name: string
+          date: string
+          hours: number
+          description?: string | null
+          approved?: boolean
+          billable?: boolean
+          upload_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          person_id?: number
+          person_name?: string
+          person_email?: string | null
+          project_id?: number
+          project_name?: string
+          project_category?: string
+          activity_id?: number
+          activity_name?: string
+          date?: string
+          hours?: number
+          description?: string | null
+          approved?: boolean
+          billable?: boolean
+          upload_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "timesheet_entries_upload_id_fkey"
+            columns: ["upload_id"]
+            referencedRelation: "upload_history"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never
