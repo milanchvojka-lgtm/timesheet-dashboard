@@ -34,42 +34,36 @@ export async function parseCSV(
 
 /**
  * Parse Excel file to array of objects
+ * Works on both server and client side using arrayBuffer
  */
 export async function parseExcel(file: File): Promise<RawTimesheetRow[]> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
+  try {
+    // Read file as ArrayBuffer (works on both server and client)
+    const arrayBuffer = await file.arrayBuffer()
 
-    reader.onload = (e) => {
-      try {
-        const data = e.target?.result
-        const workbook = XLSX.read(data, { type: 'binary' })
+    // Parse with XLSX
+    const workbook = XLSX.read(arrayBuffer, { type: 'array' })
 
-        // Get first sheet
-        const sheetName = workbook.SheetNames[0]
-        const sheet = workbook.Sheets[sheetName]
-
-        // Convert to JSON
-        const jsonData = XLSX.utils.sheet_to_json(sheet, {
-          raw: false, // Keep as strings for consistency
-          defval: null, // Use null for empty cells
-        }) as RawTimesheetRow[]
-
-        resolve(jsonData)
-      } catch (error) {
-        reject(
-          new Error(
-            `Excel parsing error: ${error instanceof Error ? error.message : 'Unknown error'}`
-          )
-        )
-      }
+    // Get first sheet
+    const sheetName = workbook.SheetNames[0]
+    if (!sheetName) {
+      throw new Error('Excel file has no sheets')
     }
 
-    reader.onerror = () => {
-      reject(new Error('Failed to read Excel file'))
-    }
+    const sheet = workbook.Sheets[sheetName]
 
-    reader.readAsBinaryString(file)
-  })
+    // Convert to JSON
+    const jsonData = XLSX.utils.sheet_to_json(sheet, {
+      raw: false, // Keep as strings for consistency
+      defval: null, // Use null for empty cells
+    }) as RawTimesheetRow[]
+
+    return jsonData
+  } catch (error) {
+    throw new Error(
+      `Excel parsing error: ${error instanceof Error ? error.message : 'Unknown error'}`
+    )
+  }
 }
 
 /**
