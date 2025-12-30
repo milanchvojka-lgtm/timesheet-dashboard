@@ -25,10 +25,10 @@ const QuerySchema = z.object({
   dateTo: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format'),
-  personId: z.coerce.number().optional(),
-  projectId: z.coerce.number().optional(),
-  page: z.coerce.number().min(1).optional(),
-  perPage: z.coerce.number().min(1).max(100).optional(),
+  personId: z.string().regex(/^\d+$/).transform(Number).optional(),
+  projectId: z.string().regex(/^\d+$/).transform(Number).optional(),
+  page: z.string().regex(/^\d+$/).transform(Number).refine(val => val >= 1, 'Page must be >= 1').optional(),
+  perPage: z.string().regex(/^\d+$/).transform(Number).refine(val => val >= 1 && val <= 100, 'PerPage must be between 1 and 100').optional(),
 })
 
 /**
@@ -61,14 +61,22 @@ export async function GET(request: NextRequest) {
 
     // 2. Parse and validate query parameters
     const { searchParams } = new URL(request.url)
-    const queryParams = {
-      dateFrom: searchParams.get('dateFrom'),
-      dateTo: searchParams.get('dateTo'),
-      personId: searchParams.get('personId'),
-      projectId: searchParams.get('projectId'),
-      page: searchParams.get('page'),
-      perPage: searchParams.get('perPage'),
-    }
+    const queryParams: Record<string, string> = {}
+
+    // Only include parameters that are present
+    const dateFrom = searchParams.get('dateFrom')
+    const dateTo = searchParams.get('dateTo')
+    const personId = searchParams.get('personId')
+    const projectId = searchParams.get('projectId')
+    const page = searchParams.get('page')
+    const perPage = searchParams.get('perPage')
+
+    if (dateFrom) queryParams.dateFrom = dateFrom
+    if (dateTo) queryParams.dateTo = dateTo
+    if (personId) queryParams.personId = personId
+    if (projectId) queryParams.projectId = projectId
+    if (page) queryParams.page = page
+    if (perPage) queryParams.perPage = perPage
 
     const validationResult = QuerySchema.safeParse(queryParams)
 
@@ -85,10 +93,10 @@ export async function GET(request: NextRequest) {
     const params = validationResult.data
 
     // 3. Validate date range
-    const dateFrom = new Date(params.dateFrom)
-    const dateTo = new Date(params.dateTo)
+    const startDate = new Date(params.dateFrom)
+    const endDate = new Date(params.dateTo)
 
-    if (dateFrom > dateTo) {
+    if (startDate > endDate) {
       return NextResponse.json(
         { error: 'dateFrom must be before or equal to dateTo' },
         { status: 400 }
@@ -97,7 +105,7 @@ export async function GET(request: NextRequest) {
 
     // Prevent fetching too large date ranges (max 1 year)
     const daysDiff = Math.ceil(
-      (dateTo.getTime() - dateFrom.getTime()) / (1000 * 60 * 60 * 24)
+      (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
     )
     if (daysDiff > 365) {
       return NextResponse.json(
