@@ -150,7 +150,7 @@ export async function POST(request: NextRequest) {
       }
 
       console.log(
-        `[API] Closed FTE record for ${personName}: ${existingRecord.fte} (valid until ${validToString})`
+        `[API] Closed FTE record for ${personName}: ${existingRecord.fte_value} (valid until ${validToString})`
       )
     }
 
@@ -159,9 +159,10 @@ export async function POST(request: NextRequest) {
       .from('planned_fte')
       .insert({
         person_name: personName,
-        fte: fteNum,
+        fte_value: fteNum,
         valid_from: validFromDate,
         valid_to: null, // Current record
+        user_id: null, // Optional - not all people are users in the system
       })
       .select()
       .single()
@@ -182,7 +183,7 @@ export async function POST(request: NextRequest) {
       entity_id: newRecord.id,
       details: {
         person_name: personName,
-        old_fte: existingRecord?.fte || null,
+        old_fte: existingRecord?.fte_value || null,
         new_fte: fteNum,
         valid_from: validFromDate,
       },

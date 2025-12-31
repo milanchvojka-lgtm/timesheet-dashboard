@@ -35,7 +35,7 @@ import {
 interface FTERecord {
   id: string
   person_name: string
-  fte: number
+  fte_value: number
   valid_from: string
   valid_to: string | null
   created_at: string
@@ -175,7 +175,7 @@ export default function PlannedFTEPage() {
   // Edit existing record
   const handleEdit = (record: FTERecord) => {
     setPersonName(record.person_name)
-    setFte(record.fte.toFixed(2))
+    setFte(record.fte_value.toFixed(2))
     setValidFrom(new Date().toISOString().split('T')[0])
     setDialogOpen(true)
   }
@@ -346,7 +346,7 @@ export default function PlannedFTEPage() {
                   <TableRow key={record.id}>
                     <TableCell className="font-medium">{record.person_name}</TableCell>
                     <TableCell>
-                      <span className="font-mono">{record.fte.toFixed(2)}</span>
+                      <span className="font-mono">{record.fte_value.toFixed(2)}</span>
                     </TableCell>
                     <TableCell>{formatDate(record.valid_from)}</TableCell>
                     <TableCell>
