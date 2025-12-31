@@ -7,6 +7,7 @@ export type ActivityCategory =
   | 'OPS_Reviews'
   | 'OPS_Guiding'
   | 'Unpaired'
+  | 'Other' // For non-OPS/Guiding projects without validation issues
 
 /**
  * Activity keyword from database
@@ -24,24 +25,40 @@ export interface ActivityKeyword {
  * Performs case-insensitive matching of keywords in activity description and name.
  * Priority order: Hiring > Jobs > Reviews > Guiding
  *
+ * Rules:
+ * 1. OPS_Hiring, OPS_Jobs, OPS_Reviews: ONLY valid on OPS projects
+ *    - If found on any other project (Guiding, Internal, R&D, etc.) → Unpaired
+ * 2. OPS_Guiding: Only valid on Guiding projects
+ *    - If found on OPS project without specific keywords → Unpaired
+ * 3. Fallback: Guiding projects without keywords → OPS_Guiding
+ * 4. Fallback: OPS projects without keywords → Unpaired (must use specific keywords)
+ * 5. Other projects: Always Unpaired (Internal, R&D, PR, etc. should not use OPS keywords)
+ *
  * @param activityName - Activity/task name
  * @param description - Activity description (optional)
- * @param projectName - Project name (for Guiding detection)
+ * @param projectName - Project name (for project type detection)
  * @param keywords - Array of activity keywords from database
  * @returns Category of the activity
  *
  * @example
- * categorizeActivity('Interview', 'Interview with candidate', keywords)
+ * categorizeActivity('Interview', 'Interview with candidate', 'Design tým OPS_2025', keywords)
  * // Returns: 'OPS_Hiring'
  *
- * categorizeActivity('Jobs', 'Update job postings', keywords)
- * // Returns: 'OPS_Jobs'
+ * categorizeActivity('Jobs: Posting', 'Update jobs', 'Design tým Interní_2025', keywords)
+ * // Returns: 'Unpaired' (Jobs keyword on Internal project - mistake!)
+ *
+ * categorizeActivity('Meeting', 'Team sync', 'Design tým OPS_2025', keywords)
+ * // Returns: 'Unpaired' (OPS project needs specific keywords)
+ *
+ * categorizeActivity('Meeting', 'Team sync', 'Design tým Guiding_2025', keywords)
+ * // Returns: 'OPS_Guiding' (Guiding project fallback)
  */
 export function categorizeActivity(
   activityName: string,
   description: string | null,
   projectName: string,
-  keywords: ActivityKeyword[]
+  keywords: ActivityKeyword[],
+  strictValidation: boolean = false
 ): ActivityCategory {
   // Combine activity name and description for matching
   const searchText = `${activityName} ${description || ''}`.toLowerCase()
@@ -55,57 +72,78 @@ export function categorizeActivity(
     OPS_Guiding: keywords.filter((k) => k.category === 'OPS_Guiding' || k.category === 'OPS Guiding' || k.category === 'OPS General').map((k) => k.keyword.toLowerCase()),
   }
 
-  // Check for hiring keywords (only on OPS projects, not Guiding)
+  // Check for hiring keywords (ONLY valid on OPS projects)
   for (const keyword of categorizedKeywords.OPS_Hiring) {
     if (searchText.includes(keyword)) {
-      // If found on Guiding project, it's a mistake
-      if (projectNameLower.includes('guiding')) {
-        return 'Unpaired'
+      // Only valid on OPS projects (not Guiding, not Internal, not R&D, etc.)
+      if (projectNameLower.includes('ops')) {
+        return 'OPS_Hiring'
       }
-      return 'OPS_Hiring'
+      // Found on wrong project type - it's a mistake
+      return 'Unpaired'
     }
   }
 
-  // Check for jobs keywords (only on OPS projects, not Guiding)
+  // Check for jobs keywords (ONLY valid on OPS projects)
   for (const keyword of categorizedKeywords.OPS_Jobs) {
     if (searchText.includes(keyword)) {
-      // If found on Guiding project, it's a mistake
-      if (projectNameLower.includes('guiding')) {
-        return 'Unpaired'
+      // Only valid on OPS projects (not Guiding, not Internal, not R&D, etc.)
+      if (projectNameLower.includes('ops')) {
+        return 'OPS_Jobs'
       }
-      return 'OPS_Jobs'
+      // Found on wrong project type - it's a mistake
+      return 'Unpaired'
     }
   }
 
-  // Check for reviews keywords (only on OPS projects, not Guiding)
+  // Check for reviews keywords (ONLY valid on OPS projects)
   for (const keyword of categorizedKeywords.OPS_Reviews) {
     if (searchText.includes(keyword)) {
-      // If found on Guiding project, it's a mistake
-      if (projectNameLower.includes('guiding')) {
-        return 'Unpaired'
+      // Only valid on OPS projects (not Guiding, not Internal, not R&D, etc.)
+      if (projectNameLower.includes('ops')) {
+        return 'OPS_Reviews'
       }
-      return 'OPS_Reviews'
+      // Found on wrong project type - it's a mistake
+      return 'Unpaired'
     }
   }
 
-  // Check for guiding/general keywords (works on both OPS and Guiding projects)
+  // Check for guiding/general keywords (only valid on Guiding projects)
   for (const keyword of categorizedKeywords.OPS_Guiding) {
     if (searchText.includes(keyword)) {
-      return 'OPS_Guiding'
+      // Only valid on Guiding projects
+      if (projectNameLower.includes('guiding')) {
+        return 'OPS_Guiding'
+      } else if (projectNameLower.includes('ops')) {
+        // If found on OPS project without specific keywords, it's unpaired
+        return 'Unpaired'
+      }
+      // If found on other projects (Internal, R&D, PR), ignore it
+      // These projects can use general keywords without issues
+      // Continue checking other rules
     }
   }
 
-  // Default categorization based on project name
+  // Fallback rules based on project name
   if (projectNameLower.includes('guiding')) {
+    // Guiding projects without keywords still count as OPS_Guiding
     return 'OPS_Guiding'
   }
 
   if (projectNameLower.includes('ops')) {
-    return 'OPS_Guiding'
+    // OPS projects without specific keywords
+    if (strictValidation) {
+      // Strict mode (Review Buddy): Flag as unpaired - needs fixing!
+      return 'Unpaired'
+    } else {
+      // Lenient mode (Analytics): Auto-categorize as OPS_Guiding
+      return 'OPS_Guiding'
+    }
   }
 
-  // No match found
-  return 'Unpaired'
+  // Everything else (Internal, R&D, PR, etc.) without OPS keywords is fine
+  // These don't need validation - they're just regular work on other projects
+  return 'Other'
 }
 
 /**
@@ -130,6 +168,7 @@ export interface CategorizedEntry {
  *
  * @param entries - Array of timesheet entries
  * @param keywords - Array of activity keywords
+ * @param strictValidation - If true, use strict validation rules (for Review Buddy)
  * @returns Array of categorized entries
  */
 export function categorizeTimesheet(
@@ -145,7 +184,8 @@ export function categorizeTimesheet(
     hours: number
     description: string | null
   }>,
-  keywords: ActivityKeyword[]
+  keywords: ActivityKeyword[],
+  strictValidation: boolean = false
 ): CategorizedEntry[] {
   return entries.map((entry) => ({
     ...entry,
@@ -153,7 +193,8 @@ export function categorizeTimesheet(
       entry.activity_name,
       entry.description,
       entry.project_name,
-      keywords
+      keywords,
+      strictValidation
     ),
   }))
 }
