@@ -1,17 +1,60 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PeriodSelector, PeriodPreset, getPeriodDateRange } from "./period-selector"
 import { OverviewTab } from "./overview-tab"
 import { ProjectsTab } from "./projects-tab"
 import { ActivitiesTab } from "./activities-tab"
 import { TeamTab } from "./team-tab"
+import { NotificationBanner } from "./notification-banner"
 import { BarChart3, TrendingUp, Activity, Users } from "lucide-react"
+
+interface Notification {
+  id: string
+  type: 'info' | 'warning' | 'error'
+  title: string
+  message: string
+  actionText?: string
+  actionUrl?: string
+}
 
 export function DashboardTabs() {
   const [period, setPeriod] = useState<PeriodPreset>("12m")
+  const [notifications, setNotifications] = useState<Notification[]>([])
+  const [loadingNotifications, setLoadingNotifications] = useState(true)
   const dateRange = getPeriodDateRange(period)
+
+  // Fetch notifications when period changes
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      setLoadingNotifications(true)
+      try {
+        const response = await fetch(
+          `/api/notifications?dateFrom=${dateRange.dateFrom}&dateTo=${dateRange.dateTo}`
+        )
+        const data = await response.json()
+
+        if (response.ok && data.notifications) {
+          setNotifications(data.notifications)
+        } else {
+          console.error('[Dashboard] Failed to fetch notifications:', data.error)
+          setNotifications([])
+        }
+      } catch (error) {
+        console.error('[Dashboard] Error fetching notifications:', error)
+        setNotifications([])
+      } finally {
+        setLoadingNotifications(false)
+      }
+    }
+
+    fetchNotifications()
+  }, [dateRange.dateFrom, dateRange.dateTo])
+
+  const handleDismissNotification = (id: string) => {
+    setNotifications((prev) => prev.filter((n) => n.id !== id))
+  }
 
   return (
     <div className="space-y-6">
@@ -25,6 +68,24 @@ export function DashboardTabs() {
         </div>
         <PeriodSelector value={period} onChange={setPeriod} />
       </div>
+
+      {/* Notifications */}
+      {!loadingNotifications && notifications.length > 0 && (
+        <div className="space-y-3">
+          {notifications.map((notification) => (
+            <NotificationBanner
+              key={notification.id}
+              type={notification.type}
+              title={notification.title}
+              message={notification.message}
+              actionText={notification.actionText}
+              actionUrl={notification.actionUrl}
+              dismissible={true}
+              onDismiss={() => handleDismissNotification(notification.id)}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Tabs */}
       <Tabs defaultValue="overview" className="space-y-6">

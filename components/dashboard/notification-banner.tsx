@@ -1,8 +1,10 @@
 "use client"
 
 import { useState } from "react"
-import { X, AlertCircle, Info, CheckCircle, AlertTriangle } from "lucide-react"
+import { X, AlertCircle, Info, CheckCircle, AlertTriangle, ArrowRight } from "lucide-react"
 import { cn } from "@/lib/utils"
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
 
 export type NotificationType = "info" | "warning" | "error" | "success"
 
@@ -12,6 +14,8 @@ export interface NotificationBannerProps {
   message: string
   dismissible?: boolean
   onDismiss?: () => void
+  actionText?: string
+  actionUrl?: string
   className?: string
 }
 
@@ -56,6 +60,8 @@ export function NotificationBanner({
   message,
   dismissible = true,
   onDismiss,
+  actionText,
+  actionUrl,
   className,
 }: NotificationBannerProps) {
   const [isVisible, setIsVisible] = useState(true)
@@ -84,11 +90,24 @@ export function NotificationBanner({
       <div className="flex items-start gap-3">
         <Icon className={cn("h-5 w-5 flex-shrink-0 mt-0.5", config.iconClass)} />
 
-        <div className="flex-1 space-y-1">
-          {title && (
-            <p className="font-medium text-sm text-foreground">{title}</p>
+        <div className="flex-1 space-y-2">
+          <div className="space-y-1">
+            {title && (
+              <p className="font-medium text-sm text-foreground">{title}</p>
+            )}
+            <p className="text-sm text-muted-foreground">{message}</p>
+          </div>
+
+          {actionText && actionUrl && (
+            <div>
+              <Button variant="outline" size="sm" asChild>
+                <Link href={actionUrl}>
+                  {actionText}
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
           )}
-          <p className="text-sm text-muted-foreground">{message}</p>
         </div>
 
         {dismissible && (
