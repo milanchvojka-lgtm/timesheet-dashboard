@@ -246,7 +246,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Log to audit log
-    await supabase.from('audit_log').insert({
+    const { error: auditError } = await supabase.from('audit_log').insert({
       user_email: session.user.email,
       action: 'update_keyword',
       entity_type: 'activity_keyword',
@@ -259,6 +259,12 @@ export async function PATCH(request: NextRequest) {
         new_description: updated.description,
       },
     })
+
+    if (auditError) {
+      console.error('[API] AUDIT LOG INSERT FAILED:', auditError)
+    } else {
+      console.log('[API] Audit log entry created successfully')
+    }
 
     console.log(
       `[API] Keyword updated: "${updated.keyword}" by ${session.user.email}`
