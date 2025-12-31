@@ -81,7 +81,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Validate specific settings
+    // Determine value type based on key
+    let valueType = 'string'
+    let jsonValue = value
+
+    // Validate and set type for specific settings
     if (key === 'default_period') {
       const validPeriods = ['monthly', 'quarterly', 'yearly']
       if (!validPeriods.includes(value)) {
@@ -90,6 +94,7 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         )
       }
+      valueType = 'string'
     }
 
     if (key === 'data_range_start' || key === 'data_range_end') {
@@ -110,6 +115,7 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         )
       }
+      valueType = 'date'
     }
 
     const supabase = createServerAdminClient()
@@ -135,7 +141,12 @@ export async function POST(request: NextRequest) {
       // Update existing setting
       const { data, error: updateError } = await supabase
         .from('settings')
-        .update({ value, updated_at: new Date().toISOString() })
+        .update({
+          value: jsonValue,
+          value_type: valueType,
+          updated_at: new Date().toISOString(),
+          updated_by: session.user.id
+        })
         .eq('key', key)
         .select()
         .single()
@@ -159,14 +170,20 @@ export async function POST(request: NextRequest) {
         details: {
           key,
           old_value: existing.value,
-          new_value: value,
+          new_value: jsonValue,
         },
       })
     } else {
       // Create new setting
       const { data, error: insertError } = await supabase
         .from('settings')
-        .insert({ key, value })
+        .insert({
+          key,
+          value: jsonValue,
+          value_type: valueType,
+          is_public: false,
+          updated_by: session.user.id
+        })
         .select()
         .single()
 
@@ -188,7 +205,7 @@ export async function POST(request: NextRequest) {
         entity_id: data.id,
         details: {
           key,
-          value,
+          value: jsonValue,
         },
       })
     }
