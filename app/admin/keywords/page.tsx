@@ -20,20 +20,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Plus, Loader2, Trash2, AlertTriangle } from 'lucide-react'
+import { Plus, Loader2, AlertTriangle } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import {
   Select,
@@ -81,8 +71,6 @@ export default function KeywordsPage() {
   const [keywords, setKeywords] = useState<Keyword[]>([])
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [selectedKeyword, setSelectedKeyword] = useState<Keyword | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
   // Form state
@@ -225,58 +213,6 @@ export default function KeywordsPage() {
         variant: 'destructive',
       })
     }
-  }
-
-  // Delete keyword
-  const handleDeleteKeyword = async () => {
-    if (!selectedKeyword) return
-
-    try {
-      setSubmitting(true)
-
-      const response = await fetch('/api/admin/keywords', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          keywordId: selectedKeyword.id,
-        }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to delete keyword')
-      }
-
-      toast({
-        title: 'Success',
-        description: `Keyword "${selectedKeyword.keyword}" deleted successfully`,
-      })
-
-      // Close dialog and clear selection
-      setDeleteDialogOpen(false)
-      setSelectedKeyword(null)
-
-      // Refresh keywords
-      await fetchKeywords()
-    } catch (error) {
-      console.error('Error deleting keyword:', error)
-      toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to delete keyword',
-        variant: 'destructive',
-      })
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  // Confirm delete
-  const confirmDelete = (keyword: Keyword) => {
-    setSelectedKeyword(keyword)
-    setDeleteDialogOpen(true)
   }
 
   // Group keywords by category
@@ -448,7 +384,6 @@ export default function KeywordsPage() {
                           <TableHead>Keyword</TableHead>
                           <TableHead>Description</TableHead>
                           <TableHead>Status</TableHead>
-                          <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -469,16 +404,6 @@ export default function KeywordsPage() {
                                 </span>
                               </div>
                             </TableCell>
-                            <TableCell className="text-right">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => confirmDelete(keyword)}
-                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
@@ -491,43 +416,6 @@ export default function KeywordsPage() {
         </div>
       )}
 
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Keyword</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete the keyword <strong>"{selectedKeyword?.keyword}"</strong>?
-              This will deactivate the keyword and may affect historical data categorization.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel
-              onClick={() => {
-                setSelectedKeyword(null)
-                setDeleteDialogOpen(false)
-              }}
-              disabled={submitting}
-            >
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteKeyword}
-              disabled={submitting}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              {submitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Deleting...
-                </>
-              ) : (
-                'Delete Keyword'
-              )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   )
 }
