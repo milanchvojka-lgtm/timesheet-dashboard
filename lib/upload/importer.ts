@@ -54,6 +54,22 @@ export async function importTimesheetData(
 
   const uploadId = uploadHistory.id
 
+  // Delete existing entries for the same date range to avoid duplicates
+  if (dataDateFrom && dataDateTo) {
+    console.log(`[Importer] Deleting existing entries from ${dataDateFrom} to ${dataDateTo}`)
+    const { error: deleteError, count } = await supabase
+      .from('timesheet_entries')
+      .delete()
+      .gte('date', dataDateFrom)
+      .lte('date', dataDateTo)
+
+    if (deleteError) {
+      console.error(`[Importer] Error deleting existing entries:`, deleteError)
+    } else {
+      console.log(`[Importer] Deleted ${count || 0} existing entries`)
+    }
+  }
+
   // Transform parsed rows to database format
   const entries: Omit<TimesheetEntry, 'id' | 'created_at' | 'updated_at'>[] = data.map((row) => ({
     person_id: row.person_id,

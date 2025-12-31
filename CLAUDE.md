@@ -215,11 +215,70 @@ The parser supports both Czech and English column names with flexible matching:
 **Supported Date Formats:**
 1. **YYYY-MM-DD** - ISO format (e.g., "2025-11-28")
 2. **DD. MM. YYYY** - Czech format (e.g., "28. 11. 2025")
-3. **Excel serial dates** - Numeric days since 1900 (e.g., 45231)
+3. **Excel serial dates** - Numeric days since 1900 (e.g., 45962 = Nov 1, 2025)
 
 **Date Validation:**
 - Year must be between 1900 and 2100
 - Invalid dates are rejected with clear error messages
+
+**Excel Serial Date Handling (CRITICAL):**
+
+Excel stores dates internally as serial numbers (e.g., 45962 for November 1, 2025). When the XLSX library reads an Excel file with `raw: false` and `dateNF: 'd. m. yyyy'`, it's supposed to convert these serial numbers to formatted date strings, but this doesn't always work reliably.
+
+**The Problem:**
+- XLSX library may return raw serial numbers (45962) instead of formatted dates ("1. 11. 2025")
+- Original parser used local timezone for conversion, causing dates to shift by ±1 day
+- Excel has a historical bug treating 1900 as a leap year (it wasn't)
+
+**The Solution:**
+The `parseDate()` function in `lib/upload/parser.ts` handles Excel serial dates with:
+
+```typescript
+// Excel serial date conversion with proper UTC handling
+let excelSerial = asNumber
+
+// Adjust for Excel's 1900 leap year bug
+if (excelSerial > 59) {
+  excelSerial -= 1
+}
+
+// January 0, 1900 is December 31, 1899 in JavaScript
+const baseDate = new Date(Date.UTC(1899, 11, 31))
+const milliseconds = excelSerial * 86400000 // days to milliseconds
+const date = new Date(baseDate.getTime() + milliseconds)
+
+// Use UTC methods to prevent timezone shifts
+const year = date.getUTCFullYear()
+const month = String(date.getUTCMonth() + 1).padStart(2, '0')
+const day = String(date.getUTCDate()).padStart(2, '0')
+return `${year}-${month}-${day}`
+```
+
+**Key Points:**
+- ✅ **Use UTC dates** - Prevents timezone-based date shifts
+- ✅ **Account for 1900 leap year bug** - Subtract 1 from serials > 59
+- ✅ **Start from Dec 31, 1899** - Excel's "January 0, 1900" = Dec 31, 1899
+- ✅ **Format as YYYY-MM-DD** - Consistent database format
+
+**Debugging Excel Date Issues:**
+
+If dates are importing incorrectly (e.g., Nov 1st entries missing):
+
+1. Check raw Excel file:
+   - Open Excel file
+   - Select a date cell
+   - Change format to "Number" (not "Date")
+   - Verify the serial number (Nov 1, 2025 = 45962)
+
+2. Use debug endpoint:
+   - Go to `/debug/parse-test`
+   - Click "Check Raw Excel"
+   - Verify serial numbers are being read correctly
+
+3. Common serial numbers:
+   - 45962 = November 1, 2025
+   - 45963 = November 2, 2025
+   - 45990 = November 29, 2025
 
 ### Number Format Handling
 
@@ -845,6 +904,95 @@ export function calculateFTE(
 - ✅ **Always test** - verify functionality
 - ✅ **Always use admin client** - for all Supabase queries when using NextAuth
 - ✅ **Always fetch fresh data** - use `getUserData()` for live database values, not JWT cache
+
+---
+
+## Troubleshooting
+
+### Excel Date Import Issues
+
+**Problem:** Entries from specific dates are missing after uploading Excel file.
+
+**Symptoms:**
+- Upload shows "426 of 426 entries" success, but some dates are missing
+- No validation errors reported
+- Expected entries visible in Excel but not in database
+
+**Root Cause:**
+Excel stores dates as serial numbers internally. The XLSX library may not convert them to formatted strings, causing the parser to receive raw serial numbers like "45962" instead of "1. 11. 2025".
+
+**Solution:**
+The parser automatically handles Excel serial dates. If experiencing issues:
+
+1. **Verify the Excel file:**
+   ```
+   - Open the Excel file
+   - Click on a date cell
+   - Change format to "Number" (not "Date")
+   - Check the serial number (e.g., Nov 1, 2025 = 45962)
+   ```
+
+2. **Use the debug page:**
+   ```
+   - Navigate to /debug/parse-test
+   - Upload your Excel file
+   - Click "Check Raw Excel"
+   - Verify serial numbers are present
+   ```
+
+3. **Check the fix:**
+   The `parseDate()` function in `/lib/upload/parser.ts` should:
+   - Use UTC dates (prevents timezone shifts)
+   - Account for Excel's 1900 leap year bug
+   - Convert serial numbers correctly
+
+**Fixed in:** Commit that updated `/lib/upload/parser.ts` to use UTC-based Excel serial date conversion.
+
+---
+
+### Activity Categorization Not Working
+
+**Problem:** Activities are showing as "Unpaired" when they should be categorized.
+
+**Solution:**
+1. Check keywords in database:
+   ```sql
+   SELECT * FROM activity_keywords WHERE is_active = true ORDER BY category, keyword;
+   ```
+
+2. Verify category names match code expectations:
+   - Database: "OPS_Hiring" or "OPS Hiring" (both supported)
+   - Code handles both underscore and space variants
+
+3. Check project-based rules:
+   - Hiring/Jobs/Reviews keywords on Guiding projects → Unpaired (tracking mistake)
+   - Guiding keywords work on both OPS and Guiding projects
+
+---
+
+### Duplicate Entries After Re-upload
+
+**Problem:** Re-uploading the same file creates duplicate entries.
+
+**Solution:**
+The importer automatically deletes existing entries for the same date range before importing. Check `/lib/upload/importer.ts`:
+
+```typescript
+// Delete existing entries for the same date range to avoid duplicates
+if (dataDateFrom && dataDateTo) {
+  await supabase
+    .from('timesheet_entries')
+    .delete()
+    .gte('date', dataDateFrom)
+    .lte('date', dataDateTo)
+}
+```
+
+**Manual cleanup:**
+If duplicates already exist, use the cleanup endpoint:
+```
+POST /api/admin/cleanup-duplicates
+```
 
 ---
 

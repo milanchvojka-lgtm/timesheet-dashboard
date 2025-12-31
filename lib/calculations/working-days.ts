@@ -8,8 +8,8 @@ export interface WorkingDaysResult {
   totalDays: number
   /** Number of weekdays (Mon-Fri) in the month */
   weekdays: number
-  /** Number of Czech public holidays that fall on weekdays */
-  holidays: number
+  /** Czech public holidays that fall on weekdays in this month */
+  holidays: Array<{ name: string; date: string }>
   /** Number of working days (weekdays - holidays) */
   workingDays: number
   /** Number of working hours (working days * 8) */
@@ -38,18 +38,22 @@ export function calculateWorkingDays(year: number, month: number): WorkingDaysRe
   const totalDays = lastDay.getDate()
 
   let weekdays = 0
-  let holidays = 0
+  const monthHolidays: Array<{ name: string; date: string }> = []
 
   // Get all Czech holidays for this year
   const yearHolidays = hd.getHolidays(year)
-  const holidayDates = new Set(
-    yearHolidays.map((h) => h.date.split(' ')[0]) // Format: "YYYY-MM-DD HH:MM:SS"
+  const holidayMap = new Map(
+    yearHolidays.map((h) => [
+      h.date.split(' ')[0], // Format: "YYYY-MM-DD HH:MM:SS"
+      h.name
+    ])
   )
 
   // Iterate through each day of the month
   for (let day = 1; day <= totalDays; day++) {
-    const date = new Date(year, month - 1, day)
-    const dayOfWeek = date.getDay() // 0 = Sunday, 6 = Saturday
+    // Use UTC to avoid timezone shifting
+    const date = new Date(Date.UTC(year, month - 1, day))
+    const dayOfWeek = date.getUTCDay() // 0 = Sunday, 6 = Saturday
 
     // Check if it's a weekday (Monday = 1, Friday = 5)
     if (dayOfWeek >= 1 && dayOfWeek <= 5) {
@@ -57,19 +61,20 @@ export function calculateWorkingDays(year: number, month: number): WorkingDaysRe
 
       // Check if this weekday is a public holiday
       const dateStr = date.toISOString().split('T')[0]
-      if (holidayDates.has(dateStr)) {
-        holidays++
+      const holidayName = holidayMap.get(dateStr)
+      if (holidayName) {
+        monthHolidays.push({ name: holidayName, date: dateStr })
       }
     }
   }
 
-  const workingDays = weekdays - holidays
+  const workingDays = weekdays - monthHolidays.length
   const workingHours = workingDays * 8 // Standard 8-hour workday
 
   return {
     totalDays,
     weekdays,
-    holidays,
+    holidays: monthHolidays,
     workingDays,
     workingHours,
   }

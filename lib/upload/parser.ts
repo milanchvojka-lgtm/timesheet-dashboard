@@ -321,15 +321,28 @@ function parseDate(dateStr: string): string | null {
   if (!isNaN(asNumber) && /^\d+(\.\d+)?$/.test(trimmed)) {
     try {
       // Excel serial date conversion
-      // Excel's epoch starts at 1900-01-01 (but actually 1900-01-00 due to leap year bug)
-      const excelEpoch = new Date(1899, 11, 30) // December 30, 1899
-      const date = new Date(excelEpoch.getTime() + asNumber * 86400000)
+      // Excel's epoch: Jan 0, 1900 (which is actually Dec 31, 1899)
+      // Excel has a bug treating 1900 as leap year, so dates >= 60 need adjustment
+      let excelSerial = asNumber
+
+      // Adjust for Excel's 1900 leap year bug
+      if (excelSerial > 59) {
+        excelSerial -= 1
+      }
+
+      // January 0, 1900 is December 31, 1899 in JavaScript
+      const baseDate = new Date(Date.UTC(1899, 11, 31))
+      const milliseconds = excelSerial * 86400000 // days to milliseconds
+      const date = new Date(baseDate.getTime() + milliseconds)
 
       if (!isNaN(date.getTime())) {
-        const year = date.getFullYear()
+        const year = date.getUTCFullYear()
+        const month = String(date.getUTCMonth() + 1).padStart(2, '0')
+        const day = String(date.getUTCDate()).padStart(2, '0')
+
         // Sanity check
         if (year >= 1900 && year <= 2100) {
-          return date.toISOString().split('T')[0]
+          return `${year}-${month}-${day}`
         }
       }
     } catch {

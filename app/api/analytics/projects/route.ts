@@ -73,16 +73,40 @@ export async function GET(request: NextRequest) {
     // Calculate total hours
     const totalHours = entries.reduce((sum, e) => sum + Number(e.hours), 0)
 
-    // Create project summary
-    const summary = Array.from(projectMap.entries())
-      .map(([category, data]) => ({
+    // Define expected categories in display order
+    const expectedCategories = ['OPS', 'Internal', 'R&D', 'Guiding', 'PR', 'UX Maturity']
+
+    // Ensure all expected categories are present (even if 0 hours)
+    expectedCategories.forEach(category => {
+      if (!projectMap.has(category)) {
+        projectMap.set(category, { hours: 0, entryCount: 0 })
+      }
+    })
+
+    // Create project summary in the expected order
+    const summary = expectedCategories.map(category => {
+      const data = projectMap.get(category) || { hours: 0, entryCount: 0 }
+      return {
         category,
         hours: Number(data.hours.toFixed(2)),
         entryCount: data.entryCount,
         fte: Number((data.hours / workingHours).toFixed(2)),
-        percentage: Number(((data.hours / totalHours) * 100).toFixed(1)),
-      }))
-      .sort((a, b) => b.hours - a.hours)
+        percentage: totalHours > 0 ? Number(((data.hours / totalHours) * 100).toFixed(1)) : 0,
+      }
+    })
+
+    // Add any other categories that exist but aren't in the expected list (should be rare)
+    projectMap.forEach((data, category) => {
+      if (!expectedCategories.includes(category)) {
+        summary.push({
+          category,
+          hours: Number(data.hours.toFixed(2)),
+          entryCount: data.entryCount,
+          fte: Number((data.hours / workingHours).toFixed(2)),
+          percentage: totalHours > 0 ? Number(((data.hours / totalHours) * 100).toFixed(1)) : 0,
+        })
+      }
+    })
 
     // Group by month and category for trends
     const monthlyData = new Map<string, Map<string, number>>()

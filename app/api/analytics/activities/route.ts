@@ -130,6 +130,7 @@ export async function GET(request: NextRequest) {
       qualityScore,
       trends,
       totalEntries: entries.length,
+      entries: categorized, // Include categorized entries for unpaired items section
       period: {
         dateFrom,
         dateTo,

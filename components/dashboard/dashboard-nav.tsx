@@ -3,13 +3,18 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { BarChart3, FolderKanban, Activity, Users, Upload } from "lucide-react"
+import { BarChart3, FolderKanban, Activity, Users, Upload, Calendar } from "lucide-react"
 
 const navItems = [
   {
     title: "Dashboard",
     href: "/dashboard",
     icon: BarChart3,
+  },
+  {
+    title: "Monthly Detail",
+    href: "/dashboard/monthly-detail",
+    icon: Calendar,
   },
   {
     title: "Projects",

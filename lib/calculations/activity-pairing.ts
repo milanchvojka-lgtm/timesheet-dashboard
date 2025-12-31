@@ -45,38 +45,63 @@ export function categorizeActivity(
 ): ActivityCategory {
   // Combine activity name and description for matching
   const searchText = `${activityName} ${description || ''}`.toLowerCase()
+  const projectNameLower = projectName.toLowerCase()
 
-  // Check project name for Guiding
-  if (projectName.toLowerCase().includes('guiding')) {
-    return 'OPS_Guiding'
-  }
-
-  // Group keywords by category
+  // Group keywords by category (handle both underscore and space variants)
   const categorizedKeywords = {
-    OPS_Hiring: keywords.filter((k) => k.category === 'OPS_Hiring').map((k) => k.keyword.toLowerCase()),
-    OPS_Jobs: keywords.filter((k) => k.category === 'OPS_Jobs').map((k) => k.keyword.toLowerCase()),
-    OPS_Reviews: keywords.filter((k) => k.category === 'OPS_Reviews').map((k) => k.keyword.toLowerCase()),
+    OPS_Hiring: keywords.filter((k) => k.category === 'OPS_Hiring' || k.category === 'OPS Hiring').map((k) => k.keyword.toLowerCase()),
+    OPS_Jobs: keywords.filter((k) => k.category === 'OPS_Jobs' || k.category === 'OPS Jobs').map((k) => k.keyword.toLowerCase()),
+    OPS_Reviews: keywords.filter((k) => k.category === 'OPS_Reviews' || k.category === 'OPS Reviews').map((k) => k.keyword.toLowerCase()),
+    OPS_Guiding: keywords.filter((k) => k.category === 'OPS_Guiding' || k.category === 'OPS Guiding' || k.category === 'OPS General').map((k) => k.keyword.toLowerCase()),
   }
 
-  // Check for hiring keywords
+  // Check for hiring keywords (only on OPS projects, not Guiding)
   for (const keyword of categorizedKeywords.OPS_Hiring) {
     if (searchText.includes(keyword)) {
+      // If found on Guiding project, it's a mistake
+      if (projectNameLower.includes('guiding')) {
+        return 'Unpaired'
+      }
       return 'OPS_Hiring'
     }
   }
 
-  // Check for jobs keywords
+  // Check for jobs keywords (only on OPS projects, not Guiding)
   for (const keyword of categorizedKeywords.OPS_Jobs) {
     if (searchText.includes(keyword)) {
+      // If found on Guiding project, it's a mistake
+      if (projectNameLower.includes('guiding')) {
+        return 'Unpaired'
+      }
       return 'OPS_Jobs'
     }
   }
 
-  // Check for reviews keywords
+  // Check for reviews keywords (only on OPS projects, not Guiding)
   for (const keyword of categorizedKeywords.OPS_Reviews) {
     if (searchText.includes(keyword)) {
+      // If found on Guiding project, it's a mistake
+      if (projectNameLower.includes('guiding')) {
+        return 'Unpaired'
+      }
       return 'OPS_Reviews'
     }
+  }
+
+  // Check for guiding/general keywords (works on both OPS and Guiding projects)
+  for (const keyword of categorizedKeywords.OPS_Guiding) {
+    if (searchText.includes(keyword)) {
+      return 'OPS_Guiding'
+    }
+  }
+
+  // Default categorization based on project name
+  if (projectNameLower.includes('guiding')) {
+    return 'OPS_Guiding'
+  }
+
+  if (projectNameLower.includes('ops')) {
+    return 'OPS_Guiding'
   }
 
   // No match found

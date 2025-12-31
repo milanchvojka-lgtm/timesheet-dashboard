@@ -41,6 +41,31 @@ export const PROJECT_PATTERNS: Array<{
     pattern: /^Design tým UX Maturity_\d{4}$/i,
     category: 'UX Maturity',
   },
+  // Support projects without "Design tým" prefix
+  {
+    pattern: /^OPS_\d{4}$/i,
+    category: 'OPS',
+  },
+  {
+    pattern: /^Interní_\d{4}$/i,
+    category: 'Internal',
+  },
+  {
+    pattern: /^R&D_\d{4}$/i,
+    category: 'R&D',
+  },
+  {
+    pattern: /^Guiding_\d{4}$/i,
+    category: 'Guiding',
+  },
+  {
+    pattern: /^PR_\d{4}$/i,
+    category: 'PR',
+  },
+  {
+    pattern: /^UX Maturity_\d{4}$/i,
+    category: 'UX Maturity',
+  },
 ]
 
 /**
@@ -71,6 +96,10 @@ export const PROJECT_MAPPING: Record<string, ProjectCategory> = {
   'Design tým Guiding_2025': 'Guiding',
   'Design tým Guiding_2026': 'Guiding',
   'Design tým Guiding': 'Guiding',
+  'Guiding_2024': 'Guiding',
+  'Guiding_2025': 'Guiding',
+  'Guiding_2026': 'Guiding',
+  'Guiding': 'Guiding',
 
   // PR variants
   'Design tým PR_2024': 'PR',
@@ -83,6 +112,11 @@ export const PROJECT_MAPPING: Record<string, ProjectCategory> = {
   'Design tým UX Maturity_2025': 'UX Maturity',
   'Design tým UX Maturity_2026': 'UX Maturity',
   'Design tým UX Maturity': 'UX Maturity',
+  'UX Maturity_2024': 'UX Maturity',
+  'UX Maturity_2025': 'UX Maturity',
+  'UX Maturity_2026': 'UX Maturity',
+  'UX Maturity': 'UX Maturity',
+  'UX Maturity 🙌': 'UX Maturity',
 }
 
 /**
