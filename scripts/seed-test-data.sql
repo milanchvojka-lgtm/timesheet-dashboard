@@ -2,24 +2,31 @@
 -- Run this in Supabase SQL Editor
 
 -- 1. Insert test timesheets with unpaired activities (will trigger "Unpaired Items" notification)
-INSERT INTO timesheet_entries (date, person_name, project_name, activity_name, hours, description)
+-- Note: Using sequential IDs for person_id, project_id, activity_id (Costlocker assigns these)
+INSERT INTO timesheet_entries (
+  person_id, person_name, person_email,
+  project_id, project_name, project_category,
+  activity_id, activity_name,
+  date, hours, description,
+  approved, billable
+)
 VALUES
   -- Paired activities (match keywords)
-  ('2024-11-15', 'Milan Chvojka', 'Design tým OPS_2025', 'Hiring new designer', 8.0, 'Conducting interviews'),
-  ('2024-11-16', 'Milan Chvojka', 'Design tým OPS_2025', 'Review candidate portfolio', 6.0, 'Portfolio reviews'),
-  ('2024-11-17', 'Milan Chvojka', 'Design tým OPS_2025', 'Job posting updates', 4.0, 'Update job descriptions'),
+  (101, 'Milan Chvojka', 'milan@2fresh.cz', 201, 'Design tým OPS_2025', 'OPS', 301, 'Hiring new designer', '2024-11-15', 8.0, 'Conducting interviews', false, true),
+  (101, 'Milan Chvojka', 'milan@2fresh.cz', 201, 'Design tým OPS_2025', 'OPS', 302, 'Review candidate portfolio', '2024-11-16', 6.0, 'Portfolio reviews', false, true),
+  (101, 'Milan Chvojka', 'milan@2fresh.cz', 201, 'Design tým OPS_2025', 'OPS', 303, 'Job posting updates', '2024-11-17', 4.0, 'Update job descriptions', false, true),
 
   -- Unpaired activities (will NOT match any keywords - trigger notification)
-  ('2024-11-18', 'Milan Chvojka', 'Design tým Interní_2025', 'Design system work', 8.0, 'Working on components'),
-  ('2024-11-19', 'Milan Chvojka', 'Design tým Interní_2025', 'Client meeting', 5.0, 'Meeting with stakeholders'),
-  ('2024-11-20', 'Milan Chvojka', 'Design tým Interní_2025', 'Documentation', 3.0, 'Writing docs'),
-  ('2024-11-21', 'Jan Novák', 'Design tým OPS_2025', 'Team coordination', 7.0, 'Planning sprint'),
-  ('2024-11-22', 'Jan Novák', 'Design tým Interní_2025', 'Prototype creation', 8.0, 'Creating prototypes'),
+  (101, 'Milan Chvojka', 'milan@2fresh.cz', 202, 'Design tým Interní_2025', 'Internal', 304, 'Design system work', '2024-11-18', 8.0, 'Working on components', false, false),
+  (101, 'Milan Chvojka', 'milan@2fresh.cz', 202, 'Design tým Interní_2025', 'Internal', 305, 'Client meeting', '2024-11-19', 5.0, 'Meeting with stakeholders', false, true),
+  (101, 'Milan Chvojka', 'milan@2fresh.cz', 202, 'Design tým Interní_2025', 'Internal', 306, 'Documentation', '2024-11-20', 3.0, 'Writing docs', false, false),
+  (102, 'Jan Novák', 'jan.novak@example.com', 201, 'Design tým OPS_2025', 'OPS', 307, 'Team coordination', '2024-11-21', 7.0, 'Planning sprint', false, false),
+  (102, 'Jan Novák', 'jan.novak@example.com', 202, 'Design tým Interní_2025', 'Internal', 308, 'Prototype creation', '2024-11-22', 8.0, 'Creating prototypes', false, false),
 
   -- More entries to create volume
-  ('2024-11-25', 'Petra Svobodová', 'Design tým OPS_2025', 'Hiring coordination', 6.0, 'Scheduling interviews'),
-  ('2024-11-26', 'Petra Svobodová', 'Design tým Interní_2025', 'Research activities', 8.0, 'User research'),
-  ('2024-11-27', 'Petra Svobodová', 'Design tým Interní_2025', 'Design reviews', 7.0, 'Reviewing designs');
+  (103, 'Petra Svobodová', 'petra@example.com', 201, 'Design tým OPS_2025', 'OPS', 309, 'Hiring coordination', '2024-11-25', 6.0, 'Scheduling interviews', false, true),
+  (103, 'Petra Svobodová', 'petra@example.com', 202, 'Design tým Interní_2025', 'Internal', 310, 'Research activities', '2024-11-26', 8.0, 'User research', false, false),
+  (103, 'Petra Svobodová', 'petra@example.com', 202, 'Design tým Interní_2025', 'Internal', 311, 'Design reviews', '2024-11-27', 7.0, 'Reviewing designs', false, false);
 
 -- 2. Add planned FTE values (to trigger "FTE Deviation" notification)
 -- Milan Chvojka: planned 1.0 FTE but tracked only ~40 hours = 0.25 FTE in Nov (75% deviation!)
