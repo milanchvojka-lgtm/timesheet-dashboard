@@ -423,85 +423,99 @@ curl http://localhost:3000/api/test/calculations
 
 ---
 
-## Phase 6: Monthly Detail
-**Duration:** 1-2 hours  
+## Phase 6: Monthly Detail ✅ COMPLETE
+**Duration:** 1-2 hours
 **Goal:** Implement detailed single-month breakdown
 
 ### Tasks:
-1. Create page: `app/(dashboard)/monthly-detail/page.tsx`
-2. Add month selector (dropdown)
-3. Display period info card (working days, holidays)
-4. Create Projects section:
-   - Detailed table with all metrics
-   - FTE by project chart
-   - Hours by project chart
-5. Create Personnel section:
-   - Detailed table with planned vs. actual
-   - Deviation column
-   - Comparison chart
-6. Create OPS Activities section:
-   - Aggregate table
-   - Personnel breakdown table
-   - Individual charts per person
-7. Create Unpaired Items section:
-   - Show count and total hours
-   - Detailed table if unpaired exist
-   - Success message if all paired
+1. ✅ Create page: `app/(dashboard)/monthly-detail/page.tsx`
+2. ✅ Add month selector (dropdown)
+3. ✅ Display period info card (working days, holidays with dates)
+4. ✅ Create Projects section:
+   - ✅ Detailed table with all metrics
+   - ✅ Always show all categories (OPS, Internal, R&D, Guiding, PR, UX Maturity)
+   - ✅ Support "Guiding_2025" and "UX Maturity 🙌" project names
+5. ✅ Create Personnel section:
+   - ✅ Detailed table with planned vs. actual
+   - ✅ Deviation column
+   - ✅ Comparison chart
+6. ✅ Create OPS Activities section:
+   - ✅ Aggregate table (Hiring, Jobs, Reviews, Guiding)
+   - ✅ Quality score calculation
+   - ✅ Only applies to OPS and Guiding projects
+7. ✅ Create Unpaired Items section:
+   - ✅ Show count and total hours
+   - ✅ Detailed table if unpaired exist
+   - ✅ Success message if all paired
+   - ✅ Only shows items from OPS and Guiding projects
+
+### Critical Fixes:
+- ✅ Fixed Excel serial date parsing (UTC, 1900 leap year bug)
+- ✅ Fixed working days timezone issue (December 26 holiday now detected)
+- ✅ Fixed project categorization (Guiding_2025 no longer shows as "Other")
+- ✅ Fixed duplicate entry prevention on re-upload
+- ✅ Added comprehensive debug tools (/debug/parse-test)
 
 ### Deliverables:
 - ✅ Monthly detail page functional
 - ✅ Month selector working
 - ✅ All sections displaying correctly
 - ✅ Tables formatted nicely
-- ✅ Charts match design
+- ✅ Period info shows holidays with dates
+- ✅ Working hours calculation correct for all months
 
 ### Verification:
-1. Select different months
-2. Verify calculations match Costlocker data
-3. Check unpaired items detection
-4. All charts render correctly
+1. ✅ Select different months - data updates correctly
+2. ✅ Verify calculations match Costlocker data
+3. ✅ Check unpaired items detection - working for OPS/Guiding only
+4. ✅ December 2025 shows 3 holidays correctly
+5. ✅ All project categories always visible (even if 0 hours)
 
 ---
 
-## Phase 7: Timesheet Review Buddy
-**Duration:** 1-2 hours  
+## Phase 7: Timesheet Review Buddy ✅ COMPLETE
+**Duration:** 1-2 hours
 **Goal:** Implement quality control for timesheet entries
 
-### Tasks:
-1. Create page: `app/(dashboard)/review-buddy/page.tsx`
-2. Implement team member selector
-   - Dropdown with all team members
-   - "Everyone at once" option
-3. Implement period selector
-4. Create overview card:
-   - Total records
-   - Paired count
-   - Unpaired count
-   - % quality score
-   - Color-coded status
-5. Create unpaired items table:
-   - Date, Project, Hours, Description
-   - Actions: Ignore, Suggest category
-6. Implement "Ignore" functionality:
-   - Save to `ignored_timesheets` table
-   - Hide from future displays
-7. Create bulk overview table (for "Everyone")
-   - Show all team members
-   - Click to drill down
-8. Add filtering by person and period
+**Implementation Approach:** Redesigned as pre-upload validation tool instead of database-based review system.
+
+### Tasks Completed:
+1. ✅ Create page: `app/dashboard/review-buddy/page.tsx`
+2. ✅ Create validation endpoint: `POST /api/review-buddy/validate-file`
+3. ✅ File upload component with drag-and-drop support
+4. ✅ Parse files without saving to database
+5. ✅ Strict validation mode for pre-upload checking
+6. ✅ Quality metrics display (total, paired, unpaired, score)
+7. ✅ Detailed unpaired items table showing exactly what needs fixing
+8. ✅ Per-person quality breakdown
+9. ✅ Visual feedback with progress bars and badges
+10. ✅ Enhanced categorization rules:
+    - OPS_Hiring, OPS_Jobs, OPS_Reviews only valid on OPS projects
+    - Detects keywords on wrong projects (Internal, R&D, Guiding)
+    - Dual validation modes (strict for Review Buddy, lenient for Analytics)
+11. ✅ Removed obsolete database-based endpoints and components
+12. ✅ Updated documentation with comprehensive Review Buddy guide
 
 ### Deliverables:
-- ✅ Review Buddy functional
-- ✅ Can select person or everyone
-- ✅ Unpaired items detected correctly
-- ✅ Ignore functionality works
-- ✅ Bulk overview table working
+- ✅ Review Buddy functional as pre-upload validation tool
+- ✅ File upload and parsing working
+- ✅ Strict validation catches all mistakes
+- ✅ Unpaired items show full details for fixing in Costlocker
+- ✅ Quality score accurate
+- ✅ Works without saving to database
+- ✅ Dual validation modes (strict/lenient) support both validation and analytics
 
 ### Verification:
-1. Select team member - see their unpaired items
-2. Click "Ignore" - item disappears
-3. Select "Everyone" - see bulk table
-4. Change period - data updates
+1. ✅ Upload timesheet file - validates without database changes
+2. ✅ Shows quality score and unpaired items
+3. ✅ Detects OPS keywords on wrong projects
+4. ✅ Monthly Detail still shows historical data correctly
+5. ✅ Analytics use lenient mode, Review Buddy uses strict mode
+
+### Git Commit:
+- ✅ Commit: `9d69f84` - "feat: Add Review Buddy pre-upload validation tool with strict validation mode"
+- ✅ Documentation updated in CLAUDE.md
+- ✅ Pushed to GitHub
 
 ---
 
@@ -700,16 +714,17 @@ curl http://localhost:3000/api/test/calculations
 | 1 | Database & Auth | 1-2 hours | ✅ COMPLETE | Login working, DB ready |
 | 2 | CSV/Excel Upload | 2-3 hours | ✅ COMPLETE | Upload system working |
 | 3 | Business Logic | 1-2 hours | ✅ COMPLETE | Calculations ready |
-| 4 | UI Foundation | 1-2 hours | 🔄 TODO | Layout & components |
-| 5 | Trend Dashboard | 2-3 hours | 🔄 TODO | All 4 tabs functional |
-| 6 | Monthly Detail | 1-2 hours | 🔄 TODO | Detailed breakdown |
-| 7 | Review Buddy | 1-2 hours | 🔄 TODO | Quality control |
-| 8 | Admin Panel | 2-3 hours | 🔄 TODO | Full admin features |
+| 4 | UI Foundation | 1-2 hours | ✅ COMPLETE | Layout & components |
+| 5 | Trend Dashboard | 2-3 hours | ✅ COMPLETE | All 4 tabs functional |
+| 6 | Monthly Detail | 1-2 hours | ✅ COMPLETE | Detailed breakdown |
+| 7 | Review Buddy | 1-2 hours | ✅ COMPLETE | Pre-upload validation |
+| 8 | Admin Panel | 2-3 hours | 📋 NEXT | Full admin features |
 | 9 | Notifications | 1 hour | 🔄 TODO | Polish & errors |
 | 10 | Testing & Deploy | 2-3 hours | 🔄 TODO | Production ready |
 
 **Total Estimated Time:** 15-23 hours of development
-**Completed:** ~7 hours (Phases 0-3)
+**Completed:** ~14 hours (Phases 0-7)
+**Next Phase:** Phase 8 - Admin Panel
 
 ---
 
@@ -725,27 +740,24 @@ Phase 2 (CSV/Excel Upload) ✅ ← Required for all data
 Phase 3 (Business Logic) ✅ ← Required for calculations
     ↓
 Phase 4 (UI Foundation) ✅ ← Required for all pages
-    ├─→ Phase 5 (Trend Dashboard) 🔄
-    ├─→ Phase 6 (Monthly Detail) 🔄
-    ├─→ Phase 7 (Review Buddy) 🔄
-    └─→ Phase 8 (Admin Panel) 🔄
+    ├─→ Phase 5 (Trend Dashboard) ✅
+    ├─→ Phase 6 (Monthly Detail) ✅
+    ├─→ Phase 7 (Review Buddy) ✅
+    └─→ Phase 8 (Admin Panel) 📋 ← NEXT
          ↓
     Phase 9 (Notifications) 🔄
          ↓
     Phase 10 (Testing & Deploy) 🔄
 ```
 
-**Current Status:** Phases 0-4 complete. Ready to begin Phase 5 (Trend Dashboard).
+**Current Status:** Phases 0-7 complete. Ready to begin Phase 8 (Admin Panel).
 
-**Phase 4 Results:**
-- ✅ Dashboard layout: Header, navigation, user menu, theme toggle
-- ✅ 8 new UI components: MetricTile, NotificationBanner, PeriodSelector, etc.
-- ✅ Dark mode: Light/Dark/System modes working
-- ✅ Production build: 12 routes compiled successfully
-- ✅ Code quality: All linting errors fixed
-- ✅ Git commit: 25221f1 pushed to GitHub
-
-Phases 5-8 can be done in parallel, but it's recommended to do them sequentially for easier testing.
+**Recent Completions:**
+- ✅ Phase 7 (Review Buddy): Redesigned as pre-upload validation tool with strict validation mode
+- ✅ Dual validation modes: Strict for Review Buddy, lenient for Analytics
+- ✅ Enhanced categorization rules to detect keywords on wrong projects
+- ✅ Documentation updated with comprehensive Review Buddy guide
+- ✅ Git commit: 9d69f84 pushed to GitHub
 
 ---
 
