@@ -40,7 +40,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
   callbacks: {
     /**
-     * Restrict sign-in to @2fresh.cz email addresses only
+     * Allowlist-based authentication
+     * Only users explicitly added as team members can log in
      */
     async signIn({ user, profile }) {
       const email = user.email || profile?.email
@@ -56,30 +57,37 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         return false
       }
 
-      // Sync user to Supabase users table
+      // Check if user is in the allowlist (is_team_member = true)
       try {
         const supabase = createServerAdminClient()
 
-        // Upsert user into Supabase (using admin client to bypass RLS)
-        const { error: upsertError } = await supabase
+        const { data, error } = await supabase
           .from("users")
-          .upsert({
-            email: email,
+          .select("is_team_member")
+          .eq("email", email)
+          .maybeSingle()
+
+        // If user doesn't exist or is not a team member, reject login
+        if (!data || !data.is_team_member) {
+          console.warn(`Login rejected: ${email} is not in the team members allowlist`)
+          return false
+        }
+
+        // Update user info on successful login (name, avatar)
+        await supabase
+          .from("users")
+          .update({
             name: user.name,
             avatar_url: user.image,
-          }, {
-            onConflict: 'email'
           })
+          .eq("email", email)
 
-        if (upsertError) {
-          console.error("Error upserting user to Supabase:", upsertError)
-        }
+        console.log(`Login successful for team member: ${email}`)
+        return true
       } catch (error) {
-        console.error("Error syncing user to Supabase:", error)
-        // Don't block sign-in if sync fails
+        console.error("Error checking user allowlist:", error)
+        return false
       }
-
-      return true
     },
 
     /**

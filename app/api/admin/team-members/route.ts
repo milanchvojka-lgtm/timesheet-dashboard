@@ -18,11 +18,12 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Fetch all users
+    // Fetch only active team members (is_team_member = true)
     const supabase = createServerAdminClient()
     const { data: users, error } = await supabase
       .from('users')
       .select('id, email, name, created_at')
+      .eq('is_team_member', true)
       .order('created_at', { ascending: false })
 
     if (error) {
@@ -97,7 +98,7 @@ export async function POST(request: NextRequest) {
     // Check if user already exists
     const { data: existing, error: checkError } = await supabase
       .from('users')
-      .select('id, email')
+      .select('id, email, is_team_member')
       .eq('email', email.toLowerCase())
       .maybeSingle()
 
@@ -109,29 +110,60 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (existing) {
+    // If user exists and is already a team member, return error
+    if (existing && existing.is_team_member) {
       return NextResponse.json(
-        { error: 'User with this email already exists' },
+        { error: 'User is already a team member' },
         { status: 400 }
       )
     }
 
-    // Insert new user
-    const { data: newUser, error: insertError } = await supabase
-      .from('users')
-      .insert({
-        email: email.toLowerCase(),
-        name: name || null,
-      })
-      .select()
-      .single()
+    let newUser
 
-    if (insertError) {
-      console.error('[API] Error creating user:', insertError)
-      return NextResponse.json(
-        { error: 'Failed to create user' },
-        { status: 500 }
-      )
+    // If user exists but is not a team member, reactivate them
+    if (existing) {
+      const { data, error: updateError } = await supabase
+        .from('users')
+        .update({
+          is_team_member: true,
+          name: name || null,
+        })
+        .eq('id', existing.id)
+        .select()
+        .single()
+
+      if (updateError) {
+        console.error('[API] Error reactivating user:', updateError)
+        return NextResponse.json(
+          { error: 'Failed to reactivate user' },
+          { status: 500 }
+        )
+      }
+
+      newUser = data
+      console.log(`[API] Reactivated team member: ${newUser.email}`)
+    } else {
+      // Create new user with team member access
+      const { data, error: insertError } = await supabase
+        .from('users')
+        .insert({
+          email: email.toLowerCase(),
+          name: name || null,
+          is_team_member: true,
+        })
+        .select()
+        .single()
+
+      if (insertError) {
+        console.error('[API] Error creating user:', insertError)
+        return NextResponse.json(
+          { error: 'Failed to create user' },
+          { status: 500 }
+        )
+      }
+
+      newUser = data
+      console.log(`[API] Created new team member: ${newUser.email}`)
     }
 
     // Log to audit log
@@ -167,7 +199,7 @@ export async function POST(request: NextRequest) {
 /**
  * API Route: DELETE /api/admin/team-members
  *
- * Removes a team member from the database
+ * Removes team member access (soft delete - sets is_team_member to false)
  */
 export async function DELETE(request: NextRequest) {
   try {
@@ -193,15 +225,15 @@ export async function DELETE(request: NextRequest) {
 
     const supabase = createServerAdminClient()
 
-    // Get user details before deletion for audit log
+    // Get user details before removal for audit log
     const { data: user, error: fetchError } = await supabase
       .from('users')
-      .select('id, email, name')
+      .select('id, email, name, is_team_member')
       .eq('id', userId)
       .maybeSingle()
 
     if (fetchError) {
-      console.error('[API] Error fetching user for deletion:', fetchError)
+      console.error('[API] Error fetching user for removal:', fetchError)
       return NextResponse.json(
         { error: 'Failed to fetch user' },
         { status: 500 }
@@ -215,7 +247,7 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    // Prevent self-deletion
+    // Prevent self-removal
     if (user.email === session.user.email) {
       return NextResponse.json(
         { error: 'You cannot remove yourself from the team' },
@@ -223,16 +255,16 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    // Delete user
-    const { error: deleteError } = await supabase
+    // Soft delete - set is_team_member to false (keeps user record)
+    const { error: updateError } = await supabase
       .from('users')
-      .delete()
+      .update({ is_team_member: false })
       .eq('id', userId)
 
-    if (deleteError) {
-      console.error('[API] Error deleting user:', deleteError)
+    if (updateError) {
+      console.error('[API] Error removing team member access:', updateError)
       return NextResponse.json(
-        { error: 'Failed to delete user' },
+        { error: 'Failed to remove team member access' },
         { status: 500 }
       )
     }
@@ -246,14 +278,15 @@ export async function DELETE(request: NextRequest) {
       details: {
         email: user.email,
         name: user.name,
+        action: 'revoked_team_member_access',
       },
     })
 
-    console.log(`[API] Team member removed: ${user.email} by ${session.user.email}`)
+    console.log(`[API] Team member access revoked: ${user.email} by ${session.user.email}`)
 
     return NextResponse.json({
       success: true,
-      message: 'Team member removed successfully',
+      message: 'Team member access revoked successfully',
     })
   } catch (error) {
     console.error('[API] Remove team member error:', error)
