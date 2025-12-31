@@ -30,6 +30,13 @@ Open [http://localhost:3000](http://localhost:3000) to view the application.
 - **Upload History** - Track all imports with success/failure statistics
 - **Data Validation** - Robust validation with clear error messages
 
+### Admin Panel (Phase 8 - Completed ✅)
+- **Team Members Management** - Add/remove team members with allowlist authentication
+- **Planned FTE Management** - Track and manage planned FTE values per person
+- **Activity Keywords** - Configure keywords for activity categorization (OPS_Hiring, OPS_Jobs, etc.)
+- **Application Settings** - Configure default period, data range, and other app settings
+- **Audit Log** - Complete audit trail of all admin actions with filtering and pagination
+
 ### Technology Stack
 - **Next.js 14** with App Router
 - **TypeScript** for type safety
@@ -139,9 +146,28 @@ The parser automatically detects both Czech and English column names:
 - Maximum file size is 10MB
 - Split large exports into multiple files by date range
 
+## Implementation Phases
+
+### Phase 8: Admin Panel (Completed ✅)
+**Status:** Production Ready
+**Completed:** December 31, 2025
+
+The admin panel provides comprehensive management tools for team members, FTE planning, activity keywords, and application settings. All admin actions are logged for audit purposes.
+
+**Features Implemented:**
+- Allowlist-based authentication (only invited users can access)
+- Team member management with soft-delete
+- Planned FTE tracking with historical versioning
+- Activity keyword configuration
+- Application settings management
+- Complete audit logging with filtering
+
+**Key Learnings:** See [Phase 8 Learnings](./docs/PHASE8_LEARNINGS.md) for detailed implementation notes, issues encountered, and solutions.
+
 ## Documentation
 
 - [CLAUDE.md](./CLAUDE.md) - Complete technical documentation for developers
 - [PROJECT_SETUP.md](./PROJECT_SETUP.md) - Detailed setup guide
 - [AUTH_SETUP_README.md](./AUTH_SETUP_README.md) - Authentication setup
 - [GOOGLE_OAUTH_SETUP.md](./GOOGLE_OAUTH_SETUP.md) - Google OAuth configuration
+- [Phase 8 Learnings](./docs/PHASE8_LEARNINGS.md) - Admin panel implementation learnings
