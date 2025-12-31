@@ -120,6 +120,23 @@ export async function POST(request: NextRequest) {
 
     const supabase = createServerAdminClient()
 
+    // Get user ID from database by email
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', session.user.email)
+      .single()
+
+    if (userError || !userData) {
+      console.error('[API] Error fetching user:', userError)
+      return NextResponse.json(
+        { error: 'Failed to fetch user' },
+        { status: 500 }
+      )
+    }
+
+    const userId = userData.id
+
     // Check if setting exists
     const { data: existing, error: checkError } = await supabase
       .from('settings')
@@ -145,7 +162,7 @@ export async function POST(request: NextRequest) {
           value: jsonValue,
           value_type: valueType,
           updated_at: new Date().toISOString(),
-          updated_by: session.user.id
+          updated_by: userId
         })
         .eq('key', key)
         .select()
@@ -182,7 +199,7 @@ export async function POST(request: NextRequest) {
           value: jsonValue,
           value_type: valueType,
           is_public: false,
-          updated_by: session.user.id
+          updated_by: userId
         })
         .select()
         .single()
