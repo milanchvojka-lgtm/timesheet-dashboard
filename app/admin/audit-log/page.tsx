@@ -294,12 +294,12 @@ export default function AuditLogPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="filterAction">Action Type</Label>
-                <Select value={filterAction} onValueChange={setFilterAction}>
+                <Select value={filterAction || 'all'} onValueChange={(val) => setFilterAction(val === 'all' ? '' : val)}>
                   <SelectTrigger id="filterAction">
                     <SelectValue placeholder="All actions" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All actions</SelectItem>
+                    <SelectItem value="all">All actions</SelectItem>
                     {Object.entries(ACTION_LABELS).map(([key, label]) => (
                       <SelectItem key={key} value={key}>
                         {label}
