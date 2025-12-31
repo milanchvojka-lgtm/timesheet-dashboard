@@ -383,7 +383,7 @@ export default function KeywordsPage() {
                         <TableRow>
                           <TableHead>Keyword</TableHead>
                           <TableHead>Description</TableHead>
-                          <TableHead>Status</TableHead>
+                          <TableHead className="text-right">Status</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -393,8 +393,8 @@ export default function KeywordsPage() {
                             <TableCell className="text-muted-foreground">
                               {keyword.description || '-'}
                             </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
+                            <TableCell className="text-right">
+                              <div className="flex items-center justify-end gap-2">
                                 <Switch
                                   checked={keyword.is_active}
                                   onCheckedChange={() => handleToggleActive(keyword)}
