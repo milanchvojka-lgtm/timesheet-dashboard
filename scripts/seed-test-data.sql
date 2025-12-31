@@ -45,8 +45,8 @@ VALUES
 SELECT
   'Timesheets' as table_name,
   COUNT(*) as count,
-  MIN(date) as earliest,
-  MAX(date) as latest
+  MIN(date)::text as earliest,
+  MAX(date)::text as latest
 FROM timesheet_entries
 WHERE date >= '2024-11-01'
 
@@ -55,7 +55,7 @@ UNION ALL
 SELECT
   'Planned FTE' as table_name,
   COUNT(*) as count,
-  MIN(valid_from::text) as earliest,
+  MIN(valid_from)::text as earliest,
   MAX(COALESCE(valid_to::text, 'NULL')) as latest
 FROM planned_fte
 WHERE valid_to IS NULL;
