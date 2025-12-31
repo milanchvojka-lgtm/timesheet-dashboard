@@ -18,7 +18,7 @@ async function checkUnpairedItems(dateFrom: string, dateTo: string): Promise<Not
 
   // Query timesheets to check categorization
   const { data: timesheets, error } = await supabase
-    .from('timesheets')
+    .from('timesheet_entries')
     .select('id, activity_name, project_name')
     .gte('date', dateFrom)
     .lte('date', dateTo)
@@ -79,7 +79,7 @@ async function checkFTEDeviations(dateFrom: string, dateTo: string): Promise<Not
 
   // Get actual FTE data from timesheets
   const { data: timesheets, error: timesheetsError } = await supabase
-    .from('timesheets')
+    .from('timesheet_entries')
     .select('person_name, hours, date')
     .gte('date', dateFrom)
     .lte('date', dateTo)
@@ -153,7 +153,7 @@ async function checkNewTeamMembers(): Promise<Notification | null> {
   const dateFrom = threeMonthsAgo.toISOString().split('T')[0]
 
   const { data: timesheets } = await supabase
-    .from('timesheets')
+    .from('timesheet_entries')
     .select('person_name')
     .gte('date', dateFrom)
 
