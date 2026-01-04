@@ -843,14 +843,108 @@ export function TrendChart({ data }: ChartProps) {
 }
 ```
 
+### Horizontal Bar Charts (Monthly Detail Views)
+
+Monthly detail sections include horizontal bar chart visualizations below their data tables:
+
+**Personnel Performance:**
+- Dual-bar chart comparing Actual FTE vs Planned FTE
+- Filters to show only main contributors (Actual FTE ≥ 0.25)
+- Two bars per person with 100px gap between them
+- Colors: #F9C57C (Actual), #B99EFB (Planned)
+- Chart title: "FTE Visual Comparison for Main Contributors (more than 0.25 FTE)"
+
+**Projects Breakdown:**
+- Single-bar chart showing FTE by project category
+- Shows all project categories sorted by FTE
+- Color: #7BD4B4 (green)
+- Chart title: "FTE Visual Comparison by Project"
+
+**OPS Activities Breakdown:**
+- Single-bar chart showing hours by activity category
+- Filters to show only activities with hours > 0
+- Color: #78D3E6 (cyan)
+- Chart title: "Hours Visual Comparison by Activity"
+
+**Common Chart Configuration:**
+```typescript
+// Standard horizontal bar chart setup
+<ResponsiveContainer width="100%" height={Math.max(chartData.length * 60, 300)}>
+  <BarChart
+    data={chartData}
+    layout="vertical"
+    margin={{ top: 5, right: 120, left: 120, bottom: 5 }}
+  >
+    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+    <XAxis type="number" domain={[0, "auto"]} />
+    <YAxis
+      type="category"
+      dataKey="name"
+      width={150}
+      axisLine={false}
+      tickLine={false}
+    />
+    <Bar
+      dataKey="fte"
+      fill="#7BD4B4"
+      radius={[0, 4, 4, 0]}
+      label={<CustomLabel />}
+      barSize={30}
+    />
+  </BarChart>
+</ResponsiveContainer>
+```
+
+**Custom Label Component:**
+```typescript
+const CustomLabel = (props: any) => {
+  const { x, y, width, height, value } = props;
+  if (!value || value === 0) return null;
+
+  return (
+    <text
+      x={x + width + 8}
+      y={y + height / 2}
+      fill="hsl(var(--foreground))"
+      fontSize="12"
+      fontFamily="inherit"
+      dominantBaseline="middle"
+    >
+      {value.toFixed(2)} FTE
+    </text>
+  );
+};
+```
+
+**Key Features:**
+- No tooltip overlay (removed for cleaner UX)
+- Labels show values at end of bars
+- Labels vertically centered using `dominantBaseline="middle"`
+- Bar thickness: 30px (`barSize={30}`)
+- Y-axis width: 150px (accommodates longer names)
+- Dynamic height: 60px per bar (projects/activities), 100px per person (personnel)
+- Rounded right corners: `radius={[0, 4, 4, 0]}`
+
 ### Chart Colors
-Use project colors consistently:
+
+**Project Colors:**
 - Internal: `#3b82f6`
 - OPS: `#10b981`
 - R&D: `#f59e0b`
 - Guiding: `#8b5cf6`
 - PR: `#ec4899`
 - UX Maturity: `#06b6d4`
+
+**Visualization Colors:**
+- Actual FTE (Personnel): `#F9C57C` (peachy orange)
+- Planned FTE (Personnel): `#B99EFB` (light purple)
+- Projects Breakdown: `#7BD4B4` (mint green)
+- OPS Activities: `#78D3E6` (cyan)
+
+**Deviation Badge Colors:**
+- Positive deviation (≥ 0%): `#7BD4B4` (mint green)
+- Minor deviation (-0.01% to -20%): `#8AB5FA` (light blue)
+- Major deviation (< -20%): `#EB4899` (pink)
 
 ---
 
