@@ -28,7 +28,7 @@ export function LoginForm({ error }: LoginFormProps) {
     setIsLoading(true)
     try {
       await signIn("google", {
-        callbackUrl: "/dashboard",
+        callbackUrl: "/overview",
       })
     } catch (error) {
       console.error("Sign-in error:", error)

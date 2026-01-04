@@ -53,7 +53,7 @@ async function checkUnpairedItems(dateFrom: string, dateTo: string): Promise<Not
       title: 'Unpaired Timesheet Items',
       message: `${unpairedCount} timesheet entries (${(100 - qualityScore).toFixed(1)}%) are not categorized. Review and add missing keywords.`,
       actionText: 'Review in Review Buddy',
-      actionUrl: '/dashboard/review-buddy',
+      actionUrl: '/review-buddy',
       priority: 2,
     }
   }
@@ -133,7 +133,7 @@ async function checkFTEDeviations(dateFrom: string, dateTo: string): Promise<Not
       title: 'FTE Deviations Detected',
       message: `${deviations.length} team member(s) have FTE deviations > 30%. Highest: ${topDeviation.person} (${topDeviation.diff}% off).`,
       actionText: 'View Team Dashboard',
-      actionUrl: '/dashboard?tab=team',
+      actionUrl: '/overview?tab=team',
       priority: 3,
     }
   }

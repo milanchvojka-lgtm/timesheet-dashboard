@@ -13,12 +13,12 @@ const navItems = [
   },
   {
     title: "Upload",
-    href: "/dashboard/upload",
+    href: "/upload",
     icon: Upload,
   },
   {
     title: "Review Buddy",
-    href: "/dashboard/review-buddy",
+    href: "/review-buddy",
     icon: CheckCircle,
   },
   {
