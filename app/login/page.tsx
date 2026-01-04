@@ -19,8 +19,8 @@ export default async function LoginPage({
   const session = await getServerSession()
 
   if (session) {
-    // Redirect to dashboard or callback URL
-    const callbackUrl = searchParams.callbackUrl || "/dashboard"
+    // Redirect to overview or callback URL
+    const callbackUrl = searchParams.callbackUrl || "/overview"
     redirect(callbackUrl)
   }
 
