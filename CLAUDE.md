@@ -564,6 +564,96 @@ export function calculateFTE(
 }
 ```
 
+### Planned FTE & Temporal Versioning
+
+The app tracks planned FTE (Full-Time Equivalent) for each team member with full temporal versioning support. This allows:
+- Tracking FTE changes over time (e.g., Petra: 0.4 FTE → 0.5 FTE in October 2025)
+- Handling team members who leave (e.g., Martin left end of May 2025)
+- Showing historically accurate FTE values when viewing past periods
+
+**Database Schema:**
+```sql
+CREATE TABLE planned_fte (
+  id UUID PRIMARY KEY,
+  person_name TEXT NOT NULL,
+  fte_value DECIMAL(3, 2) NOT NULL CHECK (fte_value >= 0 AND fte_value <= 1),
+  valid_from DATE NOT NULL,  -- Start date for this FTE value
+  valid_to DATE,             -- End date (NULL = current/active)
+  user_id UUID,
+  created_at TIMESTAMPTZ,
+
+  -- Prevent overlapping date ranges for same person
+  CONSTRAINT no_overlapping_dates EXCLUDE USING gist (
+    user_id WITH =,
+    daterange(valid_from, valid_to, '[]') WITH &&
+  )
+);
+```
+
+**Date-Aware Querying:**
+
+All FTE calculations use date-aware queries to fetch records valid during the selected period:
+
+```typescript
+// Query: valid_from <= dateTo AND (valid_to IS NULL OR valid_to >= dateFrom)
+const { data: plannedFTEs } = await supabase
+  .from('planned_fte')
+  .select('*')
+  .in('person_name', activeTrackers)
+  .lte('valid_from', dateTo)
+  .or(`valid_to.is.null,valid_to.gte.${dateFrom}`)
+
+// For each person, pick the record with latest valid_from <= dateTo
+const validRecord = personRecords
+  .filter((r) => r.valid_from <= dateTo)
+  .sort((a, b) => b.valid_from.localeCompare(a.valid_from))[0]
+```
+
+**Setting Up Historical FTE Records:**
+
+The Admin UI is designed for creating future FTE changes. For historical data, use SQL:
+
+```sql
+-- Example: Petra's FTE changed from 0.4 to 0.5 on Oct 1, 2025
+INSERT INTO planned_fte (person_name, fte_value, valid_from, valid_to, user_id)
+VALUES
+  ('Petra Panáková', 0.40, '2024-01-01', '2025-09-30', NULL),
+  ('Petra Panáková', 0.50, '2025-10-01', NULL, NULL);
+
+-- Example: Martin left the team on May 31, 2025
+INSERT INTO planned_fte (person_name, fte_value, valid_from, valid_to, user_id)
+VALUES
+  ('Martin Hrtánek', 0.50, '2024-01-01', '2025-05-31', NULL);
+```
+
+**Admin Panel Features:**
+- Shows all team members (both active and historical)
+- "History" button to view all FTE changes for each person
+- Status badges: "Active" (green) vs "Historical" (gray)
+- "Valid To" column shows when records ended
+
+**Analytics Consistency:**
+
+Both FTE Trends and Personnel Performance use identical date-aware logic:
+- Only include people who actually tracked time in the period
+- Query FTE records valid during the period
+- For people with multiple records, use the one valid at period end
+
+**CRITICAL - Rounding:**
+
+To avoid rounding errors, always sum hours first, then divide:
+
+```typescript
+// ✅ CORRECT - Matches across all views
+const totalFTE = (sumOfAllHours / workingHours).toFixed(2)
+
+// ❌ WRONG - Causes 0.01 discrepancies
+const totalFTE = people.map(p => (p.hours / workingHours).toFixed(2))
+                       .reduce((sum, fte) => sum + fte)
+```
+
+This ensures FTE Trends "Average FTE" exactly matches Personnel Performance "Total Actual FTE".
+
 ### Working Days Calculation
 - Use `date-holidays` library for Czech holidays
 - Formula: `(weekdays - holidays) × 8 hours`
@@ -1123,6 +1213,98 @@ If duplicates already exist, use the cleanup endpoint:
 ```
 POST /api/admin/cleanup-duplicates
 ```
+
+---
+
+### FTE Values Don't Match Between Sections
+
+**Problem:** FTE Trends "Average FTE" (2.34) doesn't match Personnel Performance "Total Actual FTE" (2.35)
+
+**Root Cause:**
+Rounding error caused by rounding each person's FTE before summing:
+
+```typescript
+// ❌ Wrong approach (causes 0.01 discrepancies)
+Person 1: 100/160 = 0.625 → rounds to 0.63
+Person 2: 120/160 = 0.75 → stays 0.75
+Total = 0.63 + 0.75 = 1.38
+
+// ✅ Correct approach
+Total hours: 100 + 120 = 220
+Total FTE: 220/160 = 1.375 → rounds to 1.38
+```
+
+**Solution:**
+The Personnel Performance table now uses the correctly calculated `totalFTE` from the API:
+
+```typescript
+// app/api/analytics/team/route.ts
+const totalHours = entries.reduce((sum, e) => sum + Number(e.hours), 0)
+const totalFTE = workingHours > 0 ? Number((totalHours / workingHours).toFixed(2)) : 0
+
+return NextResponse.json({
+  team,
+  totalFTE, // Use this in UI, not sum of rounded values
+})
+```
+
+Both sections now show identical values.
+
+---
+
+### Planned FTE Shows Wrong Historical Values
+
+**Problem:** Viewing September 2025 shows Petra's current 0.5 FTE instead of her historical 0.4 FTE
+
+**Root Cause:**
+The API is querying only active FTE records (`valid_to IS NULL`) instead of using date-aware queries.
+
+**Solution:**
+Use date-aware queries that filter by the period being viewed:
+
+```typescript
+// Query records valid during the selected period
+const { data: plannedFTEs } = await supabase
+  .from('planned_fte')
+  .select('*')
+  .in('person_name', activeTrackers)
+  .lte('valid_from', dateTo)
+  .or(`valid_to.is.null,valid_to.gte.${dateFrom}`)
+
+// Pick the record with latest valid_from <= dateTo
+const validRecord = personRecords
+  .filter((r) => r.valid_from <= dateTo)
+  .sort((a, b) => b.valid_from.localeCompare(a.valid_from))[0]
+```
+
+**Files to check:**
+- `app/api/analytics/fte-trends/route.ts`
+- `app/api/analytics/team/route.ts`
+
+---
+
+### Admin UI Fails When Setting Historical FTE
+
+**Problem:** Clicking "Update" for Petra with `valid_from = 2024-01-01` fails with "range lower bound must be less than or equal to range upper bound"
+
+**Root Cause:**
+The Admin UI is designed for creating **future** FTE changes, not historical ones. When you try to create a record in the past, it tries to close the current record (e.g., `valid_from = 2025-10-01`) with a `valid_to` date before it (e.g., `2024-01-01 - 1 day`), creating an invalid date range.
+
+**Solution:**
+Use SQL to set up historical FTE records:
+
+```sql
+-- First, delete existing records
+DELETE FROM planned_fte WHERE person_name = 'Petra Panáková';
+
+-- Insert historical records with proper date ranges
+INSERT INTO planned_fte (person_name, fte_value, valid_from, valid_to, user_id)
+VALUES
+  ('Petra Panáková', 0.40, '2024-01-01', '2025-09-30', NULL),
+  ('Petra Panáková', 0.50, '2025-10-01', NULL, NULL);
+```
+
+Run this in Supabase SQL Editor. The Admin UI can then be used for future FTE changes.
 
 ---
 
