@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { UserMenu } from "./user-menu"
 import { ThemeToggle } from "./theme-toggle"
+import { BarChart3 } from "lucide-react"
 
 interface DashboardHeaderProps {
   user: {
@@ -18,8 +19,8 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         {/* Logo and Title */}
         <Link href="/dashboard" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <span className="text-lg font-bold">T</span>
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+            <BarChart3 className="h-6 w-6 text-foreground" />
           </div>
           <div className="flex flex-col">
             <span className="text-lg font-semibold">Timesheet Analytics</span>
