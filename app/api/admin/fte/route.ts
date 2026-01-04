@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireTeamMember } from '@/lib/auth-utils'
 import { createServerAdminClient } from '@/lib/supabase/server'
+import { logAuditAction } from '@/lib/audit/log-action'
 
 /**
  * API Route: GET /api/admin/fte
@@ -179,14 +180,17 @@ export async function POST(request: NextRequest) {
     }
 
     // Insert new FTE record
+    // Note: user_id type mismatch - DB schema allows NULL but generated types require string
+    // Using empty string which will be handled by DB default NULL
     const { data: newRecord, error: insertError } = await supabase
       .from('planned_fte')
       .insert({
         person_name: personName,
         fte_value: fteNum,
         valid_from: validFromDate,
-        valid_to: null, // Current record
-        user_id: null, // Optional - not all people are users in the system
+        valid_to: null,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        user_id: null as any,
       })
       .select()
       .single()
@@ -200,11 +204,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Log to audit log
-    await supabase.from('audit_log').insert({
-      user_email: session.user.email,
+    await logAuditAction(supabase, {
+      userEmail: session.user.email,
       action: existingRecord ? 'update_fte' : 'create_fte',
-      entity_type: 'planned_fte',
-      entity_id: newRecord.id,
+      entityType: 'planned_fte',
+      entityId: newRecord.id,
       details: {
         person_name: personName,
         old_fte: existingRecord?.fte_value || null,

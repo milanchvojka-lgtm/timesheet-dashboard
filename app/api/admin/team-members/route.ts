@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireTeamMember } from '@/lib/auth-utils'
 import { createServerAdminClient } from '@/lib/supabase/server'
+import { logAuditAction } from '@/lib/audit/log-action'
 
 /**
  * API Route: GET /api/admin/team-members
@@ -167,11 +168,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Log to audit log
-    await supabase.from('audit_log').insert({
-      user_email: session.user.email,
+    await logAuditAction(supabase, {
+      userEmail: session.user.email,
       action: 'add_team_member',
-      entity_type: 'user',
-      entity_id: newUser.id,
+      entityType: 'user',
+      entityId: newUser.id,
       details: {
         email: newUser.email,
         name: newUser.name,
@@ -270,11 +271,11 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Log to audit log
-    await supabase.from('audit_log').insert({
-      user_email: session.user.email,
+    await logAuditAction(supabase, {
+      userEmail: session.user.email,
       action: 'remove_team_member',
-      entity_type: 'user',
-      entity_id: userId,
+      entityType: 'user',
+      entityId: userId,
       details: {
         email: user.email,
         name: user.name,

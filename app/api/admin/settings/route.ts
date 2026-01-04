@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireTeamMember } from '@/lib/auth-utils'
 import { createServerAdminClient } from '@/lib/supabase/server'
+import { logAuditAction } from '@/lib/audit/log-action'
 
 /**
  * API Route: GET /api/admin/settings
@@ -36,7 +37,7 @@ export async function GET() {
 
     // Convert to key-value object
     const settingsMap = (settings || []).reduce((acc, setting) => {
-      acc[setting.key] = setting.value
+      acc[setting.key] = setting.value as string | number | boolean | null
       return acc
     }, {} as Record<string, string | number | boolean | null>)
 
@@ -122,7 +123,7 @@ export async function POST(request: NextRequest) {
     const { data: userData, error: userError } = await supabase
       .from('users')
       .select('id')
-      .eq('email', session.user.email)
+      .eq('email', session.user.email || '')
       .single()
 
     if (userError || !userData) {
@@ -177,11 +178,11 @@ export async function POST(request: NextRequest) {
       updatedSetting = data
 
       // Log to audit log
-      await supabase.from('audit_log').insert({
-        user_email: session.user.email,
+      await logAuditAction(supabase, {
+        userEmail: session.user.email,
         action: 'update_setting',
-        entity_type: 'setting',
-        entity_id: existing.id,
+        entityType: 'setting',
+        entityId: existing.id,
         details: {
           key,
           old_value: existing.value,
@@ -213,11 +214,11 @@ export async function POST(request: NextRequest) {
       updatedSetting = data
 
       // Log to audit log
-      await supabase.from('audit_log').insert({
-        user_email: session.user.email,
+      await logAuditAction(supabase, {
+        userEmail: session.user.email,
         action: 'create_setting',
-        entity_type: 'setting',
-        entity_id: data.id,
+        entityType: 'setting',
+        entityId: data.id,
         details: {
           key,
           value: jsonValue,

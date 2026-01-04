@@ -138,11 +138,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Log to audit log
-    await logAuditAction(supabase, {
-      userEmail: session.user.email,
+    await supabase.from('audit_log').insert({
+      user_email: session.user.email,
       action: 'create_keyword',
-      entityType: 'activity_keyword',
-      entityId: newKeyword.id,
+      entity_type: 'activity_keyword',
+      entity_id: newKeyword.id,
       details: {
         keyword: newKeyword.keyword,
         category: newKeyword.category,
@@ -250,11 +250,11 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Log to audit log
-    const { error: auditError } = await logAuditAction(supabase, {
-      userEmail: session.user.email,
+    const { error: auditError } = await supabase.from('audit_log').insert({
+      user_email: session.user.email,
       action: 'update_keyword',
-      entityType: 'activity_keyword',
-      entityId: keywordId,
+      entity_type: 'activity_keyword',
+      entity_id: keywordId,
       details: {
         keyword: existing.keyword,
         old_is_active: existing.is_active,
@@ -356,11 +356,11 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Log to audit log
-    await logAuditAction(supabase, {
-      userEmail: session.user.email,
+    await supabase.from('audit_log').insert({
+      user_email: session.user.email,
       action: 'delete_keyword',
-      entityType: 'activity_keyword',
-      entityId: keywordId,
+      entity_type: 'activity_keyword',
+      entity_id: keywordId,
       details: {
         keyword: keyword.keyword,
         category: keyword.category,
