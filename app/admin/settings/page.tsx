@@ -68,7 +68,7 @@ export default function SettingsPage() {
   }, [])
 
   // Save individual setting
-  const saveSetting = async (key: string, value: any) => {
+  const saveSetting = async (key: string, value: string) => {
     try {
       const response = await fetch('/api/admin/settings', {
         method: 'POST',

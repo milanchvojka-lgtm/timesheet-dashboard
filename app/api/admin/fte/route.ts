@@ -7,7 +7,7 @@ import { createServerAdminClient } from '@/lib/supabase/server'
  *
  * Fetches current planned FTE values for all team members
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Check authentication
     const session = await requireTeamMember()
@@ -35,8 +35,18 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    interface FTERecord {
+      id: string
+      person_name: string
+      fte_value: number
+      valid_from: string
+      valid_to: string | null
+      user_id: string | null
+      created_at: string
+    }
+
     // Group by person and get the latest record for each
-    const personMap = new Map<string, any>()
+    const personMap = new Map<string, FTERecord>()
 
     allRecords?.forEach((record) => {
       if (!personMap.has(record.person_name)) {
@@ -125,7 +135,6 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = createServerAdminClient()
-    const now = new Date().toISOString()
     const validFromDate = new Date(validFrom).toISOString().split('T')[0]
 
     // Check for existing current record (valid_to is null)

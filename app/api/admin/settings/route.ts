@@ -7,7 +7,7 @@ import { createServerAdminClient } from '@/lib/supabase/server'
  *
  * Fetches all application settings
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Check authentication
     const session = await requireTeamMember()
@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
     const settingsMap = (settings || []).reduce((acc, setting) => {
       acc[setting.key] = setting.value
       return acc
-    }, {} as Record<string, any>)
+    }, {} as Record<string, string | number | boolean | null>)
 
     return NextResponse.json({ settings: settingsMap })
   } catch (error) {
@@ -82,8 +82,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Determine value type based on key
-    let valueType = 'string'
-    let jsonValue = value
+    const valueType = 'string'
+    const jsonValue = value
 
     // Validate and set type for specific settings
     if (key === 'default_period') {
@@ -94,7 +94,6 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         )
       }
-      valueType = 'string'
     }
 
     if (key === 'data_range_start' || key === 'data_range_end') {
@@ -115,7 +114,6 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         )
       }
-      valueType = 'date'
     }
 
     const supabase = createServerAdminClient()

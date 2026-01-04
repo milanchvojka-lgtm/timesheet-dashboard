@@ -30,7 +30,7 @@ interface AuditLog {
   action: string
   entity_type: string
   entity_id: string
-  details: any
+  details: Record<string, unknown> | null
   created_at: string
 }
 
@@ -222,12 +222,12 @@ export default function AuditLogPage() {
   }
 
   // Format details
-  const formatDetails = (details: any) => {
+  const formatDetails = (details: Record<string, unknown> | null) => {
     if (!details) return '-'
 
     const entries = Object.entries(details)
       .slice(0, 3)
-      .map(([key, value]) => `${key}: ${value}`)
+      .map(([key, value]) => `${key}: ${String(value)}`)
       .join(', ')
 
     return entries || '-'

@@ -15,8 +15,19 @@ export async function POST() {
       return NextResponse.json({ error: fetchError.message }, { status: 500 })
     }
 
+    interface TimesheetEntry {
+      id: string
+      person_name: string
+      date: string
+      project_name: string
+      activity_name: string
+      description: string | null
+      hours: number
+      created_at: string
+    }
+
     // Group by unique key
-    const groups = new Map<string, any[]>()
+    const groups = new Map<string, TimesheetEntry[]>()
 
     allEntries?.forEach((entry) => {
       const key = `${entry.person_name}|${entry.date}|${entry.project_name}|${entry.activity_name}|${entry.description}|${entry.hours}`

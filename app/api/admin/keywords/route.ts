@@ -7,7 +7,7 @@ import { createServerAdminClient } from '@/lib/supabase/server'
  *
  * Fetches all activity keywords (both active and inactive)
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Check authentication
     const session = await requireTeamMember()
@@ -221,7 +221,10 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Build update object
-    const updates: any = {}
+    const updates: {
+      is_active?: boolean
+      description?: string | null
+    } = {}
     if (isActive !== undefined) {
       updates.is_active = isActive
     }

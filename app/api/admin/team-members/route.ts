@@ -7,7 +7,7 @@ import { createServerAdminClient } from '@/lib/supabase/server'
  *
  * Fetches all team members from the database
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Check authentication
     const session = await requireTeamMember()
