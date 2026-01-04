@@ -12,6 +12,14 @@ import {
 } from "@/components/ui/table"
 import { Skeleton } from "@/components/ui/skeleton"
 import { FolderKanban } from "lucide-react"
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  ResponsiveContainer,
+} from "recharts"
 
 interface ProjectData {
   category: string
@@ -132,6 +140,88 @@ export function ProjectsSection({ dateFrom, dateTo }: ProjectsSectionProps) {
             No project data available for this period
           </div>
         )}
+
+        {/* Chart: Show all projects with FTE data */}
+        {data.length > 0 &&
+          (() => {
+            const chartData = data
+              .sort((a, b) => b.fte - a.fte)
+              .map((project) => ({
+                name: project.category,
+                fte: project.fte,
+              }));
+
+            if (chartData.length === 0) return null;
+
+            const CustomLabel = (props: any) => {
+              const { x, y, width, height, value } = props;
+              if (!value || value === 0) return null;
+
+              return (
+                <text
+                  x={x + width + 8}
+                  y={y + height / 2}
+                  fill="hsl(var(--foreground))"
+                  fontSize="12"
+                  fontFamily="inherit"
+                  dominantBaseline="middle"
+                >
+                  {value.toFixed(2)} FTE
+                </text>
+              );
+            };
+
+            return (
+              <div className="mt-8 pt-8 border-t">
+                <h3 className="text-sm font-medium mb-4">
+                  FTE Visual Comparison by Project
+                </h3>
+                <ResponsiveContainer
+                  width="100%"
+                  height={Math.max(chartData.length * 60, 300)}
+                >
+                  <BarChart
+                    data={chartData}
+                    layout="vertical"
+                    margin={{ top: 5, right: 120, left: 120, bottom: 5 }}
+                  >
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      className="stroke-muted"
+                    />
+                    <XAxis
+                      type="number"
+                      domain={[0, "auto"]}
+                      tick={{
+                        fontSize: 12,
+                        fontFamily: "inherit",
+                        fill: "hsl(var(--muted-foreground))",
+                      }}
+                    />
+                    <YAxis
+                      type="category"
+                      dataKey="name"
+                      width={150}
+                      tick={{
+                        fontSize: 12,
+                        fontFamily: "inherit",
+                        fill: "hsl(var(--foreground))",
+                      }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <Bar
+                      dataKey="fte"
+                      fill="#7BD4B4"
+                      radius={[0, 4, 4, 0]}
+                      label={<CustomLabel />}
+                      barSize={30}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            );
+          })()}
       </CardContent>
     </Card>
   )

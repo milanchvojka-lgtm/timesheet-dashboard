@@ -12,6 +12,14 @@ import {
 } from "@/components/ui/table"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Activity } from "lucide-react"
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  ResponsiveContainer,
+} from "recharts"
 
 interface ActivityData {
   category: string
@@ -209,6 +217,109 @@ export function ActivitiesSection({ dateFrom, dateTo }: ActivitiesSectionProps) 
             No activities data available for this period
           </div>
         )}
+
+        {/* Chart: Show all activities with hours */}
+        {data.length > 0 &&
+          (() => {
+            const chartData = data
+              .filter((activity) => activity.totalHours > 0)
+              .sort((a, b) => b.totalHours - a.totalHours)
+              .map((activity) => {
+                // Format category name for display
+                const getCategoryLabel = (category: string) => {
+                  switch (category) {
+                    case 'OPS_Hiring':
+                      return 'OPS Hiring'
+                    case 'OPS_Jobs':
+                      return 'OPS Jobs'
+                    case 'OPS_Reviews':
+                      return 'OPS Reviews'
+                    case 'OPS_Guiding':
+                      return 'OPS Guiding'
+                    case 'Unpaired':
+                      return 'Unpaired'
+                    default:
+                      return category?.replace(/_/g, ' ') || 'Unknown'
+                  }
+                }
+
+                return {
+                  name: getCategoryLabel(activity.category),
+                  hours: activity.totalHours,
+                };
+              });
+
+            if (chartData.length === 0) return null;
+
+            const CustomLabel = (props: any) => {
+              const { x, y, width, height, value } = props;
+              if (!value || value === 0) return null;
+
+              return (
+                <text
+                  x={x + width + 8}
+                  y={y + height / 2}
+                  fill="hsl(var(--foreground))"
+                  fontSize="12"
+                  fontFamily="inherit"
+                  dominantBaseline="middle"
+                >
+                  {value.toFixed(2)} hrs
+                </text>
+              );
+            };
+
+            return (
+              <div className="mt-8 pt-8 border-t">
+                <h3 className="text-sm font-medium mb-4">
+                  Hours Visual Comparison by Activity
+                </h3>
+                <ResponsiveContainer
+                  width="100%"
+                  height={Math.max(chartData.length * 60, 300)}
+                >
+                  <BarChart
+                    data={chartData}
+                    layout="vertical"
+                    margin={{ top: 5, right: 120, left: 120, bottom: 5 }}
+                  >
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      className="stroke-muted"
+                    />
+                    <XAxis
+                      type="number"
+                      domain={[0, "auto"]}
+                      tick={{
+                        fontSize: 12,
+                        fontFamily: "inherit",
+                        fill: "hsl(var(--muted-foreground))",
+                      }}
+                    />
+                    <YAxis
+                      type="category"
+                      dataKey="name"
+                      width={150}
+                      tick={{
+                        fontSize: 12,
+                        fontFamily: "inherit",
+                        fill: "hsl(var(--foreground))",
+                      }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <Bar
+                      dataKey="hours"
+                      fill="#78D3E6"
+                      radius={[0, 4, 4, 0]}
+                      label={<CustomLabel />}
+                      barSize={30}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            );
+          })()}
       </CardContent>
     </Card>
   )
