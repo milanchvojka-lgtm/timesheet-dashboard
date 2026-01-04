@@ -20,12 +20,12 @@ export async function GET(request: NextRequest) {
 
     const supabase = createServerAdminClient()
 
-    // Fetch current FTE values (where valid_to is null)
-    const { data: fteRecords, error } = await supabase
+    // Fetch ALL FTE records (including historical)
+    const { data: allRecords, error } = await supabase
       .from('planned_fte')
       .select('*')
-      .is('valid_to', null)
       .order('person_name')
+      .order('valid_from', { ascending: false })
 
     if (error) {
       console.error('[API] Error fetching FTE records:', error)
@@ -34,6 +34,21 @@ export async function GET(request: NextRequest) {
         { status: 500 }
       )
     }
+
+    // Group by person and get the latest record for each
+    const personMap = new Map<string, any>()
+
+    allRecords?.forEach((record) => {
+      if (!personMap.has(record.person_name)) {
+        personMap.set(record.person_name, record)
+      }
+    })
+
+    // Convert to array and mark status
+    const fteRecords = Array.from(personMap.values()).map((record) => ({
+      ...record,
+      status: record.valid_to === null ? 'active' : 'historical'
+    }))
 
     return NextResponse.json({ fteRecords: fteRecords || [] })
   } catch (error) {

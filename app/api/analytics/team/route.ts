@@ -51,20 +51,6 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Fetch planned FTE (only active records where valid_to is null)
-    const { data: plannedFTEs, error: fteError } = await supabase
-      .from('planned_fte')
-      .select('*')
-      .is('valid_to', null)
-
-    if (fteError) {
-      console.error('[API] Error fetching planned FTE:', fteError)
-      return NextResponse.json(
-        { error: 'Failed to fetch planned FTE data' },
-        { status: 500 }
-      )
-    }
-
     if (!entries || entries.length === 0) {
       return NextResponse.json({
         team: [],
@@ -86,12 +72,51 @@ export async function GET(request: NextRequest) {
       personMap.set(entry.person_name, existing)
     })
 
+    // Get unique person names who actually tracked time
+    const activeTrackers = Array.from(personMap.keys())
+
+    // Fetch planned FTE for people who tracked time, filtered by date range
+    // Query: valid_from <= dateTo AND (valid_to IS NULL OR valid_to >= dateFrom)
+    const { data: plannedFTEs, error: fteError } = await supabase
+      .from('planned_fte')
+      .select('*')
+      .in('person_name', activeTrackers)
+      .lte('valid_from', dateTo)
+      .or(`valid_to.is.null,valid_to.gte.${dateFrom}`)
+
+    if (fteError) {
+      console.error('[API] Error fetching planned FTE:', fteError)
+      return NextResponse.json(
+        { error: 'Failed to fetch planned FTE data' },
+        { status: 500 }
+      )
+    }
+
+    // For each person, find the FTE record valid at the end of the period (dateTo)
+    // If multiple records exist, pick the one with latest valid_from <= dateTo
+    const personFTEMap = new Map<string, number>()
+
+    activeTrackers.forEach((personName) => {
+      const personRecords = plannedFTEs?.filter((p) => p.person_name === personName) || []
+
+      if (personRecords.length > 0) {
+        // Sort by valid_from descending and pick the first one (latest record)
+        const validRecord = personRecords
+          .filter((r) => r.valid_from <= dateTo)
+          .sort((a, b) => b.valid_from.localeCompare(a.valid_from))[0]
+
+        if (validRecord) {
+          personFTEMap.set(personName, validRecord.fte_value)
+        }
+      }
+    })
+
     // Create team summary with planned vs actual
     const team = Array.from(personMap.entries())
+      .filter(([_, data]) => data.hours > 0) // Only include people who tracked hours
       .map(([person_name, data]) => {
         const actualFTE = Number((data.hours / workingHours).toFixed(2))
-        const plannedRecord = plannedFTEs?.find(p => p.person_name === person_name)
-        const plannedFTE = plannedRecord?.fte_value || 0
+        const plannedFTE = personFTEMap.get(person_name) || 0
         const deviation = plannedFTE > 0
           ? Number((((actualFTE - plannedFTE) / plannedFTE) * 100).toFixed(1))
           : 0
@@ -145,11 +170,16 @@ export async function GET(request: NextRequest) {
       })
       .sort((a, b) => String(a.month).localeCompare(String(b.month)))
 
+    // Calculate correct total FTE (sum hours first, then divide, then round)
+    const totalHours = entries.reduce((sum, e) => sum + Number(e.hours), 0)
+    const totalFTE = workingHours > 0 ? Number((totalHours / workingHours).toFixed(2)) : 0
+
     // Return team data
     return NextResponse.json({
       team,
       trends,
-      totalHours: entries.reduce((sum, e) => sum + Number(e.hours), 0),
+      totalHours,
+      totalFTE, // Correctly calculated total (not sum of rounded values)
       period: {
         dateFrom,
         dateTo,

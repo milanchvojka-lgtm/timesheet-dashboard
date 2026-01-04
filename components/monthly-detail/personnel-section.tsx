@@ -23,6 +23,12 @@ interface TeamMember {
   entryCount: number
 }
 
+interface TeamResponse {
+  team: TeamMember[]
+  totalHours: number
+  totalFTE: number
+}
+
 interface PersonnelSectionProps {
   dateFrom: string
   dateTo: string
@@ -30,6 +36,7 @@ interface PersonnelSectionProps {
 
 export function PersonnelSection({ dateFrom, dateTo }: PersonnelSectionProps) {
   const [data, setData] = useState<TeamMember[]>([])
+  const [totalFTE, setTotalFTE] = useState<number>(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -47,8 +54,9 @@ export function PersonnelSection({ dateFrom, dateTo }: PersonnelSectionProps) {
           throw new Error('Failed to fetch team data')
         }
 
-        const result = await response.json()
+        const result: TeamResponse = await response.json()
         setData(result.team || [])
+        setTotalFTE(result.totalFTE || 0)
       } catch (err) {
         console.error('Team fetch error:', err)
         setError(err instanceof Error ? err.message : 'Unknown error')
@@ -134,11 +142,23 @@ export function PersonnelSection({ dateFrom, dateTo }: PersonnelSectionProps) {
             {data.length > 0 && (
               <TableRow className="bg-muted/50 font-bold">
                 <TableCell>Total</TableCell>
-                <TableCell className="text-right">{data.reduce((sum, m) => sum + (m.actualFTE || 0), 0).toFixed(2)}</TableCell>
-                <TableCell className="text-right">{data.reduce((sum, m) => sum + (m.plannedFTE || 0), 0).toFixed(2)}</TableCell>
+                <TableCell className="text-right">
+                  {/* Use correctly calculated total FTE from API (sum hours first, then divide) */}
+                  {totalFTE.toFixed(2)}
+                </TableCell>
+                <TableCell className="text-right">
+                  {/* Sum planned FTE values */}
+                  {data.reduce((sum, m) => sum + (m.plannedFTE || 0), 0).toFixed(2)}
+                </TableCell>
                 <TableCell className="text-right">-</TableCell>
-                <TableCell className="text-right">{data.reduce((sum, m) => sum + (m.hours || 0), 0).toFixed(2)}</TableCell>
-                <TableCell className="text-right">{data.reduce((sum, m) => sum + (m.entryCount || 0), 0)}</TableCell>
+                <TableCell className="text-right">
+                  {/* Total hours */}
+                  {data.reduce((sum, m) => sum + (m.hours || 0), 0).toFixed(2)}
+                </TableCell>
+                <TableCell className="text-right">
+                  {/* Total entries */}
+                  {data.reduce((sum, m) => sum + (m.entryCount || 0), 0)}
+                </TableCell>
               </TableRow>
             )}
           </TableBody>

@@ -39,6 +39,7 @@ interface FTERecord {
   valid_from: string
   valid_to: string | null
   created_at: string
+  status?: 'active' | 'historical'
 }
 
 export default function PlannedFTEPage() {
@@ -46,6 +47,12 @@ export default function PlannedFTEPage() {
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+
+  // History dialog state
+  const [historyDialogOpen, setHistoryDialogOpen] = useState(false)
+  const [historyLoading, setHistoryLoading] = useState(false)
+  const [historyRecords, setHistoryRecords] = useState<FTERecord[]>([])
+  const [selectedPerson, setSelectedPerson] = useState('')
 
   // Form state
   const [personName, setPersonName] = useState('')
@@ -178,6 +185,33 @@ export default function PlannedFTEPage() {
     setFte(record.fte_value.toFixed(2))
     setValidFrom(new Date().toISOString().split('T')[0])
     setDialogOpen(true)
+  }
+
+  // View history for a person
+  const handleViewHistory = async (personName: string) => {
+    setSelectedPerson(personName)
+    setHistoryDialogOpen(true)
+    setHistoryLoading(true)
+
+    try {
+      const response = await fetch(`/api/admin/fte/history?personName=${encodeURIComponent(personName)}`)
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to fetch FTE history')
+      }
+
+      setHistoryRecords(data.history || [])
+    } catch (error) {
+      console.error('Error fetching FTE history:', error)
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to fetch FTE history',
+        variant: 'destructive',
+      })
+    } finally {
+      setHistoryLoading(false)
+    }
   }
 
   // Format date
@@ -316,9 +350,9 @@ export default function PlannedFTEPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Current FTE Values ({records.length})</CardTitle>
+          <CardTitle>Team FTE Values ({records.length})</CardTitle>
           <CardDescription>
-            Currently active planned FTE values for all team members
+            Latest FTE values for all team members (including those who left)
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -337,6 +371,7 @@ export default function PlannedFTEPage() {
                   <TableHead>Person Name</TableHead>
                   <TableHead>FTE Value</TableHead>
                   <TableHead>Valid From</TableHead>
+                  <TableHead>Valid To</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -350,18 +385,37 @@ export default function PlannedFTEPage() {
                     </TableCell>
                     <TableCell>{formatDate(record.valid_from)}</TableCell>
                     <TableCell>
-                      <span className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-green-100 text-green-700">
-                        Active
-                      </span>
+                      {record.valid_to ? formatDate(record.valid_to) : '-'}
+                    </TableCell>
+                    <TableCell>
+                      {record.status === 'active' ? (
+                        <span className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">
+                          Active
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+                          Historical
+                        </span>
+                      )}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEdit(record)}
-                      >
-                        Update
-                      </Button>
+                      <div className="flex gap-2 justify-end">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleViewHistory(record.person_name)}
+                        >
+                          <History className="h-4 w-4 mr-1" />
+                          History
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEdit(record)}
+                        >
+                          Update
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -370,6 +424,74 @@ export default function PlannedFTEPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* History Dialog */}
+      <Dialog open={historyDialogOpen} onOpenChange={setHistoryDialogOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>FTE History: {selectedPerson}</DialogTitle>
+            <DialogDescription>
+              All FTE changes for this person, from newest to oldest
+            </DialogDescription>
+          </DialogHeader>
+
+          {historyLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : historyRecords.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              No history found for this person
+            </div>
+          ) : (
+            <div className="max-h-[400px] overflow-y-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>FTE Value</TableHead>
+                    <TableHead>Valid From</TableHead>
+                    <TableHead>Valid To</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {historyRecords.map((record) => (
+                    <TableRow key={record.id}>
+                      <TableCell>
+                        <span className="font-mono font-medium">{record.fte_value.toFixed(2)}</span>
+                      </TableCell>
+                      <TableCell>{formatDate(record.valid_from)}</TableCell>
+                      <TableCell>
+                        {record.valid_to ? formatDate(record.valid_to) : 'Present'}
+                      </TableCell>
+                      <TableCell>
+                        {record.valid_to === null ? (
+                          <span className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">
+                            Current
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+                            Historical
+                          </span>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setHistoryDialogOpen(false)}
+            >
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Card className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
         <CardHeader>
