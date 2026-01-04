@@ -1,4 +1,4 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { BookOpen, TrendingUp, Users, FolderKanban, Activity, Upload, CheckCircle, AlertCircle } from "lucide-react"
 
@@ -159,7 +159,7 @@ export default function HelpPage() {
                     Personnel Performance
                   </h4>
                   <p className="text-sm text-muted-foreground">
-                    View each team member's Actual vs Planned FTE, including deviation percentages
+                    View each team member&apos;s Actual vs Planned FTE, including deviation percentages
                     and a visual comparison chart for main contributors (FTE ≥ 0.25).
                   </p>
                 </div>

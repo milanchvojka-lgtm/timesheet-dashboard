@@ -20,7 +20,7 @@ export default function DashboardNotFound() {
             <CardTitle className="text-2xl">Page Not Found</CardTitle>
           </div>
           <CardDescription>
-            The dashboard page you're looking for doesn't exist
+            The dashboard page you&apos;re looking for doesn&apos;t exist
           </CardDescription>
         </CardHeader>
         <CardContent>

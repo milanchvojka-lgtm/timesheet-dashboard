@@ -4,6 +4,21 @@ import { createServerAdminClient } from '@/lib/supabase/server'
 import { calculateFTEStats } from '@/lib/calculations/fte'
 import { getWorkingHoursForPeriod } from '@/lib/calculations/working-days'
 
+interface TimesheetEntry {
+  id: string
+  date: string
+  person_name: string
+  person_email: string | null
+  project_name: string
+  activity_name: string
+  description: string | null
+  hours: number
+  is_billable: boolean | null
+  project_category: string | null
+  upload_id: string
+  created_at: string
+}
+
 /**
  * API Route: GET /api/analytics/overview
  *
@@ -35,20 +50,40 @@ export async function GET(request: NextRequest) {
 
     // Fetch timesheet entries
     const supabase = createServerAdminClient()
-    const { data: entries, error } = await supabase
-      .from('timesheet_entries')
-      .select('*')
-      .gte('date', dateFrom)
-      .lte('date', dateTo)
-      .order('date', { ascending: true })
 
-    if (error) {
-      console.error('[API] Error fetching timesheet entries:', error)
-      return NextResponse.json(
-        { error: 'Failed to fetch timesheet data' },
-        { status: 500 }
-      )
+    // Fetch timesheet entries in batches (Supabase has 1000-row limit)
+    let allEntries: TimesheetEntry[] = []
+    let from = 0
+    const batchSize = 1000
+    let hasMore = true
+
+    while (hasMore) {
+      const { data: batch, error } = await supabase
+        .from('timesheet_entries')
+        .select('*')
+        .gte('date', dateFrom)
+        .lte('date', dateTo)
+        .order('date', { ascending: true })
+        .range(from, from + batchSize - 1)
+
+      if (error) {
+        console.error('[API] Error fetching timesheet entries:', error)
+        return NextResponse.json(
+          { error: 'Failed to fetch timesheet data' },
+          { status: 500 }
+        )
+      }
+
+      if (batch && batch.length > 0) {
+        allEntries = allEntries.concat(batch)
+        hasMore = batch.length === batchSize
+        from += batchSize
+      } else {
+        hasMore = false
+      }
     }
+
+    const entries = allEntries
 
     if (!entries || entries.length === 0) {
       return NextResponse.json({

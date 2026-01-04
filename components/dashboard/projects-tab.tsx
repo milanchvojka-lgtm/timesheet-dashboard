@@ -126,7 +126,7 @@ export function ProjectsTab({ dateFrom, dateTo }: ProjectsTabProps) {
             title={project.category}
             value={`${project.percentage}%`}
             subtitle={`${project.hours.toFixed(0)} hours • ${project.fte.toFixed(2)} FTE`}
-            variant={getCategoryVariant(project.category) as any}
+            variant={getCategoryVariant(project.category) as "default" | "internal" | "ops" | "rnd" | "guiding" | "pr" | "ux"}
           />
         ))}
       </div>

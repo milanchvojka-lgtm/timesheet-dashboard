@@ -25,10 +25,7 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
-  Legend,
   ResponsiveContainer,
-  Cell,
 } from "recharts";
 
 interface TeamMember {
@@ -220,8 +217,14 @@ export function PersonnelSection({ dateFrom, dateTo }: PersonnelSectionProps) {
 
             if (chartData.length === 0) return null;
 
-            const CustomLabel = (props: any) => {
-              const { x, y, width, height, value, dataKey } = props;
+            const CustomLabel = (props: {
+              x: number;
+              y: number;
+              width: number;
+              height: number;
+              value: number;
+            }) => {
+              const { x, y, width, height, value } = props;
               if (!value || value === 0) return null;
 
               return (

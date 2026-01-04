@@ -153,7 +153,13 @@ export function ProjectsSection({ dateFrom, dateTo }: ProjectsSectionProps) {
 
             if (chartData.length === 0) return null;
 
-            const CustomLabel = (props: any) => {
+            const CustomLabel = (props: {
+              x: number;
+              y: number;
+              width: number;
+              height: number;
+              value: number;
+            }) => {
               const { x, y, width, height, value } = props;
               if (!value || value === 0) return null;
 

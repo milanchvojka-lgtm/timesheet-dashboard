@@ -100,7 +100,7 @@ export function ActivitiesTab({ dateFrom, dateTo }: ActivitiesTabProps) {
     )
   }
 
-  const { summary, qualityScore, trends } = data
+  const { summary, qualityScore } = data
 
   // Get color for activity category
   const getCategoryColor = (category: string) => {

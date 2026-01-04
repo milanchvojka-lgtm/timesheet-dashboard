@@ -1,8 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireTeamMember } from '@/lib/auth-utils'
 import { createServerAdminClient } from '@/lib/supabase/server'
-import { calculateTeamMonthlyFTE } from '@/lib/calculations/fte'
-import { getWorkingHoursForPeriod } from '@/lib/calculations/working-days'
+import { getWorkingHoursForPeriod, calculateWorkingDays } from '@/lib/calculations/working-days'
+
+interface TimesheetEntry {
+  id: string
+  date: string
+  person_name: string
+  person_email: string | null
+  project_name: string
+  activity_name: string
+  description: string | null
+  hours: number
+  is_billable: boolean | null
+  project_category: string | null
+  upload_id: string
+  created_at: string
+}
 
 /**
  * API Route: GET /api/analytics/team
@@ -35,21 +49,39 @@ export async function GET(request: NextRequest) {
 
     const supabase = createServerAdminClient()
 
-    // Fetch timesheet entries
-    const { data: entries, error: entriesError } = await supabase
-      .from('timesheet_entries')
-      .select('*')
-      .gte('date', dateFrom)
-      .lte('date', dateTo)
-      .order('date', { ascending: true })
+    // Fetch timesheet entries in batches (Supabase has 1000-row limit)
+    let allEntries: TimesheetEntry[] = []
+    let from = 0
+    const batchSize = 1000
+    let hasMore = true
 
-    if (entriesError) {
-      console.error('[API] Error fetching timesheet entries:', entriesError)
-      return NextResponse.json(
-        { error: 'Failed to fetch timesheet data' },
-        { status: 500 }
-      )
+    while (hasMore) {
+      const { data: batch, error: entriesError } = await supabase
+        .from('timesheet_entries')
+        .select('*')
+        .gte('date', dateFrom)
+        .lte('date', dateTo)
+        .order('date', { ascending: true })
+        .range(from, from + batchSize - 1)
+
+      if (entriesError) {
+        console.error('[API] Error fetching timesheet entries:', entriesError)
+        return NextResponse.json(
+          { error: 'Failed to fetch timesheet data' },
+          { status: 500 }
+        )
+      }
+
+      if (batch && batch.length > 0) {
+        allEntries = allEntries.concat(batch)
+        hasMore = batch.length === batchSize
+        from += batchSize
+      } else {
+        hasMore = false
+      }
     }
+
+    const entries = allEntries
 
     if (!entries || entries.length === 0) {
       return NextResponse.json({
@@ -72,6 +104,17 @@ export async function GET(request: NextRequest) {
       personMap.set(entry.person_name, existing)
     })
 
+    // Group entries by person AND month for month-aware planned FTE calculation
+    const personMonthMap = new Map<string, Set<string>>()
+
+    entries.forEach((entry) => {
+      const monthKey = entry.date.substring(0, 7) // YYYY-MM
+      if (!personMonthMap.has(entry.person_name)) {
+        personMonthMap.set(entry.person_name, new Set())
+      }
+      personMonthMap.get(entry.person_name)!.add(monthKey)
+    })
+
     // Get unique person names who actually tracked time
     const activeTrackers = Array.from(personMap.keys())
 
@@ -92,28 +135,53 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // For each person, find the FTE record valid at the end of the period (dateTo)
-    // If multiple records exist, pick the one with latest valid_from <= dateTo
+    // Calculate planned FTE for each person (period-proportional)
+    // This shows their average FTE for the ENTIRE period, not just months they worked
     const personFTEMap = new Map<string, number>()
 
     activeTrackers.forEach((personName) => {
       const personRecords = plannedFTEs?.filter((p) => p.person_name === personName) || []
+      const monthsWorked = personMonthMap.get(personName) || new Set()
 
-      if (personRecords.length > 0) {
-        // Sort by valid_from descending and pick the first one (latest record)
-        const validRecord = personRecords
-          .filter((r) => r.valid_from <= dateTo)
-          .sort((a, b) => b.valid_from.localeCompare(a.valid_from))[0]
+      if (personRecords.length > 0 && monthsWorked.size > 0) {
+        let totalPlannedFTEHours = 0
 
-        if (validRecord) {
-          personFTEMap.set(personName, validRecord.fte_value)
+        // For each month this person worked, calculate their planned FTE
+        monthsWorked.forEach((monthKey) => {
+          const [year, month] = monthKey.split('-').map(Number)
+          const workingDaysResult = calculateWorkingDays(year, month)
+          const monthWorkingHours = workingDaysResult.workingHours
+
+          // Find FTE record valid during this month
+          const monthStart = `${monthKey}-01`
+          const monthLastDay = new Date(year, month, 0).getDate()
+          const monthEnd = `${monthKey}-${monthLastDay.toString().padStart(2, '0')}`
+
+          const validRecord = personRecords
+            .filter((r) => {
+              const validFrom = r.valid_from
+              const validTo = r.valid_to || '9999-12-31'
+              return validFrom <= monthEnd && validTo >= monthStart
+            })
+            .sort((a, b) => b.valid_from.localeCompare(a.valid_from))[0]
+
+          if (validRecord) {
+            totalPlannedFTEHours += validRecord.fte_value * monthWorkingHours
+          }
+        })
+
+        // Calculate planned FTE proportional to the ENTIRE period (not just months worked)
+        // This accounts for people who only worked part of the period
+        if (workingHours > 0) {
+          const periodProportionalFTE = totalPlannedFTEHours / workingHours
+          personFTEMap.set(personName, periodProportionalFTE)
         }
       }
     })
 
     // Create team summary with planned vs actual
     const team = Array.from(personMap.entries())
-      .filter(([_, data]) => data.hours > 0) // Only include people who tracked hours
+      .filter(([, data]) => data.hours > 0) // Only include people who tracked hours
       .map(([person_name, data]) => {
         const actualFTE = Number((data.hours / workingHours).toFixed(2))
         const plannedFTE = personFTEMap.get(person_name) || 0
@@ -174,12 +242,56 @@ export async function GET(request: NextRequest) {
     const totalHours = entries.reduce((sum, e) => sum + Number(e.hours), 0)
     const totalFTE = workingHours > 0 ? Number((totalHours / workingHours).toFixed(2)) : 0
 
+    // Calculate total planned FTE using month-by-month approach (matches FTE trends API)
+    // This accounts for people joining/leaving during the period
+    let totalPlannedFTEHours = 0
+
+    monthlyData.forEach((personHours, monthKey) => {
+      const [year, month] = monthKey.split('-').map(Number)
+      const workingDaysResult = calculateWorkingDays(year, month)
+      const monthWorkingHours = workingDaysResult.workingHours
+
+      // Get people who tracked time in this month
+      const monthPeople = Array.from(personHours.keys())
+
+      // Calculate planned FTE for this month
+      let monthPlannedFTE = 0
+
+      monthPeople.forEach((personName) => {
+        const personRecords = plannedFTEs?.filter((p) => p.person_name === personName) || []
+
+        if (personRecords.length > 0) {
+          // Find FTE record valid during this month
+          const monthStart = `${monthKey}-01`
+          const monthLastDay = new Date(year, month, 0).getDate()
+          const monthEnd = `${monthKey}-${monthLastDay.toString().padStart(2, '0')}`
+
+          const validRecord = personRecords
+            .filter((r) => {
+              const validFrom = r.valid_from
+              const validTo = r.valid_to || '9999-12-31'
+              return validFrom <= monthEnd && validTo >= monthStart
+            })
+            .sort((a, b) => b.valid_from.localeCompare(a.valid_from))[0]
+
+          if (validRecord) {
+            monthPlannedFTE += validRecord.fte_value
+          }
+        }
+      })
+
+      totalPlannedFTEHours += monthPlannedFTE * monthWorkingHours
+    })
+
+    const totalPlannedFTE = workingHours > 0 ? Number((totalPlannedFTEHours / workingHours).toFixed(2)) : 0
+
     // Return team data
     return NextResponse.json({
       team,
       trends,
       totalHours,
       totalFTE, // Correctly calculated total (not sum of rounded values)
+      totalPlannedFTE, // Month-by-month weighted planned FTE
       period: {
         dateFrom,
         dateTo,

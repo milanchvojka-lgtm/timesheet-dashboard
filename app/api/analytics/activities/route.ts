@@ -3,6 +3,21 @@ import { requireTeamMember } from '@/lib/auth-utils'
 import { createServerAdminClient } from '@/lib/supabase/server'
 import { categorizeTimesheet, getActivitySummary, calculateQualityScore } from '@/lib/calculations/activity-pairing'
 
+interface TimesheetEntry {
+  id: string
+  date: string
+  person_name: string
+  person_email: string | null
+  project_name: string
+  activity_name: string
+  description: string | null
+  hours: number
+  is_billable: boolean | null
+  project_category: string | null
+  upload_id: string
+  created_at: string
+}
+
 /**
  * API Route: GET /api/analytics/activities
  *
@@ -34,21 +49,39 @@ export async function GET(request: NextRequest) {
 
     const supabase = createServerAdminClient()
 
-    // Fetch timesheet entries
-    const { data: entries, error: entriesError } = await supabase
-      .from('timesheet_entries')
-      .select('*')
-      .gte('date', dateFrom)
-      .lte('date', dateTo)
-      .order('date', { ascending: true })
+    // Fetch timesheet entries in batches (Supabase has 1000-row limit)
+    let allEntries: TimesheetEntry[] = []
+    let from = 0
+    const batchSize = 1000
+    let hasMore = true
 
-    if (entriesError) {
-      console.error('[API] Error fetching timesheet entries:', entriesError)
-      return NextResponse.json(
-        { error: 'Failed to fetch timesheet data' },
-        { status: 500 }
-      )
+    while (hasMore) {
+      const { data: batch, error: entriesError } = await supabase
+        .from('timesheet_entries')
+        .select('*')
+        .gte('date', dateFrom)
+        .lte('date', dateTo)
+        .order('date', { ascending: true })
+        .range(from, from + batchSize - 1)
+
+      if (entriesError) {
+        console.error('[API] Error fetching timesheet entries:', entriesError)
+        return NextResponse.json(
+          { error: 'Failed to fetch timesheet data' },
+          { status: 500 }
+        )
+      }
+
+      if (batch && batch.length > 0) {
+        allEntries = allEntries.concat(batch)
+        hasMore = batch.length === batchSize
+        from += batchSize
+      } else {
+        hasMore = false
+      }
     }
+
+    const entries = allEntries
 
     // Fetch activity keywords
     const { data: keywords, error: keywordsError } = await supabase

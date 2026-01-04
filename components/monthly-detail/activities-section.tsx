@@ -55,18 +55,27 @@ export function ActivitiesSection({ dateFrom, dateTo }: ActivitiesSectionProps) 
 
         const result = await response.json()
 
+        interface CategorizedEntry {
+          date: string
+          project_name: string
+          activity_name: string
+          hours: number
+          description: string | null
+          category: string
+        }
+
         // Filter entries to only OPS and Guiding projects
-        const opsEntries = (result.entries || []).filter((entry: any) => {
+        const opsEntries = (result.entries || []).filter((entry: CategorizedEntry) => {
           const projectNameLower = entry.project_name?.toLowerCase() || ''
           return projectNameLower.includes('ops') || projectNameLower.includes('guiding')
         })
 
         // Calculate summary for OPS projects only
-        const totalHours = opsEntries.reduce((sum: number, e: any) => sum + (e.hours || 0), 0)
+        const totalHours = opsEntries.reduce((sum: number, e: CategorizedEntry) => sum + (e.hours || 0), 0)
 
         // Group by category
         const categoryMap = new Map<string, { hours: number; count: number }>()
-        opsEntries.forEach((entry: any) => {
+        opsEntries.forEach((entry: CategorizedEntry) => {
           const category = entry.category || 'Unknown'
           const existing = categoryMap.get(category)
           if (existing) {
@@ -104,7 +113,7 @@ export function ActivitiesSection({ dateFrom, dateTo }: ActivitiesSectionProps) 
 
         // Calculate quality score for OPS projects only
         if (opsEntries.length > 0) {
-          const opsUnpairedCount = opsEntries.filter((e: any) => e.category === 'Unpaired').length
+          const opsUnpairedCount = opsEntries.filter((e: CategorizedEntry) => e.category === 'Unpaired').length
           const opsPairedCount = opsEntries.length - opsUnpairedCount
           const opsQualityScore = parseFloat(((opsPairedCount / opsEntries.length) * 100).toFixed(1))
           setQualityScore(opsQualityScore)
@@ -251,7 +260,13 @@ export function ActivitiesSection({ dateFrom, dateTo }: ActivitiesSectionProps) 
 
             if (chartData.length === 0) return null;
 
-            const CustomLabel = (props: any) => {
+            const CustomLabel = (props: {
+              x: number;
+              y: number;
+              width: number;
+              height: number;
+              value: number;
+            }) => {
               const { x, y, width, height, value } = props;
               if (!value || value === 0) return null;
 

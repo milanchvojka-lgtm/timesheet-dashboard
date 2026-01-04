@@ -49,15 +49,24 @@ export function UnpairedSection({ dateFrom, dateTo }: UnpairedSectionProps) {
 
         const result = await response.json()
 
+        interface CategorizedEntry {
+          date: string
+          project_name: string
+          activity_name: string
+          hours: number
+          description: string | null
+          category: string
+        }
+
         // Filter all entries to only OPS and Guiding projects
-        const opsEntries = (result.entries || []).filter((entry: any) => {
+        const opsEntries = (result.entries || []).filter((entry: CategorizedEntry) => {
           const projectNameLower = entry.project_name?.toLowerCase() || ''
           return projectNameLower.includes('ops') || projectNameLower.includes('guiding')
         })
 
         // Calculate quality score for OPS projects only
         if (opsEntries.length > 0) {
-          const opsUnpairedCount = opsEntries.filter((e: any) => e.category === 'Unpaired').length
+          const opsUnpairedCount = opsEntries.filter((e: CategorizedEntry) => e.category === 'Unpaired').length
           const opsPairedCount = opsEntries.length - opsUnpairedCount
           const opsQualityScore = parseFloat(((opsPairedCount / opsEntries.length) * 100).toFixed(1))
           setQualityScore(opsQualityScore)
@@ -67,8 +76,8 @@ export function UnpairedSection({ dateFrom, dateTo }: UnpairedSectionProps) {
 
         // Filter for unpaired entries ONLY from OPS projects
         const unpaired = opsEntries
-          .filter((entry: any) => entry.category === 'Unpaired')
-          .map((entry: any) => ({
+          .filter((entry: CategorizedEntry) => entry.category === 'Unpaired')
+          .map((entry: CategorizedEntry) => ({
             date: entry.date || '',
             project: entry.project_name || 'Unknown',
             activity: entry.activity_name || 'Unknown',
@@ -125,7 +134,7 @@ export function UnpairedSection({ dateFrom, dateTo }: UnpairedSectionProps) {
           Quality Control - Unpaired Items
         </CardTitle>
         <CardDescription>
-          Items that couldn't be categorized automatically
+          Items that couldn&apos;t be categorized automatically
         </CardDescription>
       </CardHeader>
       <CardContent>

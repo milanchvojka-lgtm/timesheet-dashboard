@@ -61,7 +61,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       try {
         const supabase = createServerAdminClient()
 
-        const { data, error } = await supabase
+        const { data } = await supabase
           .from("users")
           .select("is_team_member")
           .eq("email", email)
@@ -153,13 +153,13 @@ async function checkTeamMember(email: string | null | undefined): Promise<boolea
     const { createServerAdminClient } = await import("@/lib/supabase/server")
     const supabase = createServerAdminClient()
 
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from("users")
       .select("is_team_member")
       .eq("email", email)
       .single()
 
-    if (error || !data) {
+    if (!data) {
       return false
     }
 
