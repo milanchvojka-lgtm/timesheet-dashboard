@@ -3,38 +3,33 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { BarChart3, FolderKanban, Activity, Users, Upload, Calendar } from "lucide-react"
+import { Upload, TrendingUp, CheckCircle, Settings, HelpCircle } from "lucide-react"
 
 const navItems = [
   {
-    title: "Dashboard",
-    href: "/dashboard",
-    icon: BarChart3,
-  },
-  {
-    title: "Monthly Detail",
-    href: "/dashboard/monthly-detail",
-    icon: Calendar,
-  },
-  {
-    title: "Projects",
-    href: "/dashboard/projects",
-    icon: FolderKanban,
-  },
-  {
-    title: "Activities",
-    href: "/dashboard/activities",
-    icon: Activity,
-  },
-  {
-    title: "Team",
-    href: "/dashboard/team",
-    icon: Users,
+    title: "Overview",
+    href: "/overview",
+    icon: TrendingUp,
   },
   {
     title: "Upload",
     href: "/dashboard/upload",
     icon: Upload,
+  },
+  {
+    title: "Review Buddy",
+    href: "/dashboard/review-buddy",
+    icon: CheckCircle,
+  },
+  {
+    title: "Admin",
+    href: "/admin",
+    icon: Settings,
+  },
+  {
+    title: "Help",
+    href: "/help",
+    icon: HelpCircle,
   },
 ]
 
@@ -47,7 +42,11 @@ export function DashboardNav() {
         <div className="flex h-12 items-center gap-6">
           {navItems.map((item) => {
             const Icon = item.icon
-            const isActive = pathname === item.href
+            // For Admin, check if pathname starts with /admin
+            // For others, check exact match
+            const isActive = item.href === '/admin'
+              ? pathname.startsWith('/admin')
+              : pathname === item.href
 
             return (
               <Link
