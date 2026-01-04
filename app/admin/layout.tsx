@@ -1,32 +1,34 @@
 import { redirect } from 'next/navigation'
-import { requireTeamMember } from '@/lib/auth-utils'
+import { getServerSession } from '@/lib/auth-utils'
+import { DashboardHeader } from '@/components/dashboard/dashboard-header'
+import { DashboardNav } from '@/components/dashboard/dashboard-nav'
 import { AdminNav } from '@/components/admin/admin-nav'
 
 export default async function AdminLayout({
   children,
 }: {
-  children: React.Node
+  children: React.ReactNode
 }) {
-  const session = await requireTeamMember()
+  // Check authentication
+  const session = await getServerSession()
 
   if (!session) {
-    redirect('/unauthorized')
+    redirect('/login?callbackUrl=/admin')
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <div className="border-b">
-        <div className="container mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold">Admin Panel</h1>
-          <p className="text-sm text-muted-foreground">
-            Manage team members, FTE planning, and activity keywords
-          </p>
-        </div>
-      </div>
+    <div className="min-h-screen bg-background">
+      {/* Main Header */}
+      <DashboardHeader user={session.user} />
 
+      {/* Main Navigation */}
+      <DashboardNav />
+
+      {/* Admin Sub-Navigation */}
       <AdminNav />
 
-      <main className="flex-1 container mx-auto px-4 py-8">
+      {/* Content */}
+      <main className="container mx-auto px-4 py-6">
         {children}
       </main>
     </div>

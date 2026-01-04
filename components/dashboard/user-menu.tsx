@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Image from "next/image"
-import { User, Settings, LogOut, FileText, Users } from "lucide-react"
+import { User, LogOut } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,9 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Button } from "@/components/ui/button"
 import { handleSignOut } from "@/app/actions/auth"
-import { useRouter } from "next/navigation"
 
 interface UserMenuProps {
   user: {
@@ -24,7 +22,6 @@ interface UserMenuProps {
 }
 
 export function UserMenu({ user }: UserMenuProps) {
-  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
 
   const handleLogout = async () => {
@@ -63,19 +60,6 @@ export function UserMenu({ user }: UserMenuProps) {
             <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
           </div>
         </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => router.push("/dashboard/monthly-detail")}>
-          <FileText className="mr-2 h-4 w-4" />
-          <span>Monthly Detail</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => router.push("/dashboard/review-buddy")}>
-          <Users className="mr-2 h-4 w-4" />
-          <span>Review Buddy</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => router.push("/admin")}>
-          <Settings className="mr-2 h-4 w-4" />
-          <span>Admin Panel</span>
-        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout} disabled={isLoading}>
           <LogOut className="mr-2 h-4 w-4" />

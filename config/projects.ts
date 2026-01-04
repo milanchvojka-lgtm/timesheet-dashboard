@@ -66,6 +66,11 @@ export const PROJECT_PATTERNS: Array<{
     pattern: /^UX Maturity_\d{4}$/i,
     category: 'UX Maturity',
   },
+  // UX Maturity with emoji
+  {
+    pattern: /^UX Maturity_\d{4}\s*🙌$/i,
+    category: 'UX Maturity',
+  },
 ]
 
 /**
@@ -117,6 +122,9 @@ export const PROJECT_MAPPING: Record<string, ProjectCategory> = {
   'UX Maturity_2026': 'UX Maturity',
   'UX Maturity': 'UX Maturity',
   'UX Maturity 🙌': 'UX Maturity',
+  'UX Maturity_2024 🙌': 'UX Maturity',
+  'UX Maturity_2025 🙌': 'UX Maturity',
+  'UX Maturity_2026 🙌': 'UX Maturity',
 }
 
 /**

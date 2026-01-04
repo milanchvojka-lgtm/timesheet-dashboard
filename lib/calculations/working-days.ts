@@ -40,13 +40,15 @@ export function calculateWorkingDays(year: number, month: number): WorkingDaysRe
   let weekdays = 0
   const monthHolidays: Array<{ name: string; date: string }> = []
 
-  // Get all Czech holidays for this year
+  // Get all Czech PUBLIC holidays for this year (exclude observances)
   const yearHolidays = hd.getHolidays(year)
   const holidayMap = new Map(
-    yearHolidays.map((h) => [
-      h.date.split(' ')[0], // Format: "YYYY-MM-DD HH:MM:SS"
-      h.name
-    ])
+    yearHolidays
+      .filter((h) => h.type === 'public') // Only count public holidays, not observances
+      .map((h) => [
+        h.date.split(' ')[0], // Format: "YYYY-MM-DD HH:MM:SS"
+        h.name
+      ])
   )
 
   // Iterate through each day of the month
@@ -119,15 +121,17 @@ export function getWorkingHoursForPeriod(dateFrom: string, dateTo: string): numb
  * Get list of Czech public holidays for a given year
  *
  * @param year - Year (e.g., 2025)
- * @returns Array of holiday objects with name and date
+ * @returns Array of holiday objects with name and date (only public holidays, not observances)
  */
 export function getCzechHolidays(year: number) {
   const hd = new Holidays('CZ')
   const holidays = hd.getHolidays(year)
 
-  return holidays.map((h) => ({
-    name: h.name,
-    date: h.date.split(' ')[0], // Extract YYYY-MM-DD
-    type: h.type,
-  }))
+  return holidays
+    .filter((h) => h.type === 'public') // Only return public holidays
+    .map((h) => ({
+      name: h.name,
+      date: h.date.split(' ')[0], // Extract YYYY-MM-DD
+      type: h.type,
+    }))
 }
