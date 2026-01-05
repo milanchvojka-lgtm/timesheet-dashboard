@@ -296,9 +296,9 @@ If the server is already running, restart it to pick up the new environment vari
 5. Sign in with your @2fresh.cz Google account
 
 6. **After successful login**:
-   - Should redirect to `/dashboard`
+   - Should redirect to `/overview`
    - Should see your name and email
-   - Should see user information card
+   - Should see analytics dashboard
 
 ### 6.3 Verify Database Entry
 
@@ -324,7 +324,7 @@ If you want to test team member features:
 
 1. Click **"Sign Out"** button
 2. Should redirect to home page
-3. Try accessing `/dashboard` → Should redirect to `/login`
+3. Try accessing `/overview` → Should redirect to `/login`
 
 ✅ **Everything working!**
 
@@ -397,7 +397,8 @@ Now that everything is set up:
 
 - **Application**: http://localhost:3000
 - **Login**: http://localhost:3000/login
-- **Dashboard**: http://localhost:3000/dashboard
+- **Overview**: http://localhost:3000/overview
+- **Upload**: http://localhost:3000/upload
 - **Supabase Dashboard**: https://app.supabase.com
 - **Google Cloud Console**: https://console.cloud.google.com
 

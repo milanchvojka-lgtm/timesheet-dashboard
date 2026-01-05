@@ -17,7 +17,7 @@ The application uses **NextAuth.js v5** with **Google OAuth** for authentication
 5. Callback to `/api/auth/callback/google`
 6. NextAuth creates user record in Supabase `users` table
 7. Session created and stored in Supabase
-8. User redirected to `/dashboard`
+8. User redirected to `/overview`
 
 ### Key Components
 
@@ -58,10 +58,10 @@ Handles all NextAuth endpoints:
 - Simple pass-through for NextAuth v5
 - Authentication checking happens at page level
 
-#### 7. Protected Routes (`app/dashboard/layout.tsx`)
-- Layout component that wraps protected pages
-- Checks authentication using `getServerSession()`
-- Redirects to login if not authenticated
+#### 7. Protected Routes (Various layout files)
+- Layout components wrap protected pages (`app/overview/layout.tsx`, `app/upload/layout.tsx`, etc.)
+- Check authentication using `getServerSession()`
+- Redirect to login if not authenticated
 
 ## Domain Restriction
 
@@ -306,9 +306,9 @@ Service role key only used server-side
 2. Should see "Access denied" error
 
 ### 3. Test Protected Routes
-1. Go to http://localhost:3000/dashboard (not logged in)
+1. Go to http://localhost:3000/overview (not logged in)
 2. Should redirect to /login
-3. After login, should access dashboard
+3. After login, should access overview
 
 ### 4. Test Sign Out
 1. Click "Sign Out" button

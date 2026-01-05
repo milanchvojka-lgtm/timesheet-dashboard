@@ -96,14 +96,14 @@ Navigate to the application and sign in with your **@2fresh.cz** Google account.
    - Export to CSV or Excel format
 
 2. **Upload to Dashboard:**
-   - Navigate to `/dashboard/upload`
+   - Navigate to `/upload`
    - Drag and drop your exported file or click "Browse Files"
    - Wait for processing (typically <10 seconds for 500 rows)
 
 3. **View Results:**
    - See upload statistics (total rows, successful, failed)
    - Check upload history for all previous imports
-   - Navigate to dashboard to analyze the data
+   - Navigate to overview to analyze the data
 
 ### 3. Supported File Formats
 

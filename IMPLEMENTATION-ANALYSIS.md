@@ -178,7 +178,7 @@ export function validateEnv() {
 
 #### 2.1 Implement Dashboard Caching
 ```typescript
-// app/dashboard/page.tsx
+// app/overview/page.tsx
 export const revalidate = 300 // Revalidate every 5 minutes
 
 // Or use React Cache
@@ -203,7 +203,7 @@ const entries = await supabase
 
 #### 2.3 Implement Lazy Loading for Charts
 ```typescript
-// components/dashboard/dashboard-tabs.tsx
+// components/overview/overview-tabs.tsx
 import dynamic from 'next/dynamic'
 
 const TrendChart = dynamic(() => import('./trend-chart'), {
@@ -292,7 +292,7 @@ describe('Upload API', () => {
 ```typescript
 // e2e/upload-flow.spec.ts (Playwright)
 test('complete upload flow', async ({ page }) => {
-  await page.goto('/dashboard/upload')
+  await page.goto('/upload')
   await page.setInputFiles('input[type="file"]', 'test-data.csv')
   await expect(page.locator('text=Upload successful')).toBeVisible()
 })
@@ -422,14 +422,15 @@ The suggested improvements in this document are enhancements for further optimiz
 ## Pages Inventory
 
 ### Public Pages
-- `/` - Landing/Home page
+- `/` - Root redirect (auto-redirects to /login or /overview based on auth)
 - `/login` - Google OAuth login page
 
-### Dashboard Pages
-- `/dashboard` - Main dashboard (analytics/trends)
-- `/dashboard/monthly-detail` - Monthly detailed breakdown
-- `/dashboard/upload` - CSV/Excel upload page with history
-- `/dashboard/review-buddy` - Pre-upload validation tool
+### Main Pages
+- `/overview` - Main analytics dashboard with FTE trends and team performance
+- `/monthly-detail` - Monthly detailed breakdown (standalone page)
+- `/upload` - CSV/Excel upload page with history
+- `/review-buddy` - Pre-upload validation tool
+- `/help` - Comprehensive user help and documentation
 
 ### Admin Pages
 - `/admin` - Admin panel home
@@ -439,7 +440,4 @@ The suggested improvements in this document are enhancements for further optimiz
 - `/admin/settings` - App settings configuration
 - `/admin/audit-log` - Admin action history
 
-### Debug/Development
-- `/debug/parse-test` - Excel/CSV parsing test tool
-
-**Total: 13 pages**
+**Total: 13 pages** (removed /dashboard route group, added /help page)

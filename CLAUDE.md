@@ -162,7 +162,7 @@ Users manually export timesheet data from Costlocker and upload CSV or Excel fil
    - Export to CSV or Excel format
 
 2. **Upload to App:**
-   - Navigate to `/dashboard/upload`
+   - Navigate to `/upload`
    - Drag and drop or browse for file
    - File is validated (type, size, format)
 
@@ -348,7 +348,7 @@ function generateIdFromString(str: string): number {
 
 **Components:**
 - `components/upload/file-upload.tsx` - Drag-and-drop upload
-- `app/dashboard/upload/page.tsx` - Upload page with history
+- `app/upload/page.tsx` - Upload page with history
 
 ### Testing with Sample Data
 
@@ -356,7 +356,7 @@ Sample CSV file: `sample-data/costlocker-export-sample.csv`
 
 ```bash
 # Navigate to upload page
-open http://localhost:3000/dashboard/upload
+open http://localhost:3000/upload
 
 # Upload the sample file
 # Should import 20 entries successfully
@@ -739,7 +739,7 @@ Review Buddy is a pre-upload validation tool that checks timesheet files BEFORE 
 
 ### How It Works
 
-1. **File Upload**: User uploads CSV/Excel file on `/dashboard/review-buddy` page
+1. **File Upload**: User uploads CSV/Excel file on `/review-buddy` page
 2. **Parsing**: File is parsed using same logic as regular upload (`parseAndMapFile`)
 3. **Project Categorization**: All entries are mapped to project categories (OPS, Guiding, Internal, R&D, PR, UX Maturity, Other)
 4. **Activity Categorization**: Entries are categorized using **strict validation mode**
