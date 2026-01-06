@@ -3,13 +3,18 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { Upload, TrendingUp, CheckCircle, Settings, HelpCircle } from "lucide-react"
+import { Upload, TrendingUp, CheckCircle, Settings, HelpCircle, Users } from "lucide-react"
 
 const navItems = [
   {
     title: "Overview",
     href: "/overview",
     icon: TrendingUp,
+  },
+  {
+    title: "Team Members",
+    href: "/team-members",
+    icon: Users,
   },
   {
     title: "Upload",
