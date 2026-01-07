@@ -30,16 +30,6 @@ interface PersonSectionProps {
   member: TeamMember
 }
 
-const PROJECT_COLORS: Record<string, string> = {
-  'Internal': '#3b82f6',
-  'OPS': '#10b981',
-  'R&D': '#f59e0b',
-  'Guiding': '#8b5cf6',
-  'PR': '#ec4899',
-  'UX Maturity': '#06b6d4',
-  'Other': '#6b7280'
-}
-
 export function PersonSection({ member }: PersonSectionProps) {
   const { expandedSections, toggleSection } = useExpandCollapse()
   const isExpanded = expandedSections.has(member.person)
@@ -138,15 +128,7 @@ export function PersonSection({ member }: PersonSectionProps) {
               <TableBody>
                 {member.projects.map((project) => (
                   <TableRow key={project.project}>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        <div
-                          className="w-3 h-3 rounded-sm"
-                          style={{ backgroundColor: PROJECT_COLORS[project.project] || PROJECT_COLORS['Other'] }}
-                        />
-                        {project.project}
-                      </div>
-                    </TableCell>
+                    <TableCell className="font-medium">{project.project}</TableCell>
                     <TableCell className="text-right">{project.hours}</TableCell>
                     <TableCell className="text-right">{project.percentage}%</TableCell>
                   </TableRow>
