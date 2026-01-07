@@ -1,9 +1,29 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, createContext, useContext } from 'react'
 import { PeriodSelector, PeriodSelection } from '@/components/overview/period-selector'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { PersonSection } from './person-section'
+import { ChevronDown, ChevronUp } from 'lucide-react'
+
+// Context for managing expand/collapse state across all sections
+interface ExpandCollapseContextType {
+  expandedSections: Set<string>
+  toggleSection: (personName: string) => void
+  expandAll: () => void
+  collapseAll: () => void
+}
+
+const ExpandCollapseContext = createContext<ExpandCollapseContextType | undefined>(undefined)
+
+export function useExpandCollapse() {
+  const context = useContext(ExpandCollapseContext)
+  if (!context) {
+    throw new Error('useExpandCollapse must be used within ExpandCollapseProvider')
+  }
+  return context
+}
 
 const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
@@ -79,6 +99,36 @@ export function TeamMembersView({ dataRange }: { dataRange: DataRange }) {
   const [period, setPeriod] = useState<PeriodSelection>(getInitialPeriod())
   const [data, setData] = useState<TeamMembersData | null>(null)
   const [loading, setLoading] = useState(false)
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set())
+
+  // Initialize all sections as expanded when data loads
+  useEffect(() => {
+    if (data?.teamMembers) {
+      setExpandedSections(new Set(data.teamMembers.map(m => m.person)))
+    }
+  }, [data?.teamMembers])
+
+  const toggleSection = (personName: string) => {
+    setExpandedSections(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(personName)) {
+        newSet.delete(personName)
+      } else {
+        newSet.add(personName)
+      }
+      return newSet
+    })
+  }
+
+  const expandAll = () => {
+    if (data?.teamMembers) {
+      setExpandedSections(new Set(data.teamMembers.map(m => m.person)))
+    }
+  }
+
+  const collapseAll = () => {
+    setExpandedSections(new Set())
+  }
 
   useEffect(() => {
     const fetchData = async () => {
@@ -99,15 +149,45 @@ export function TeamMembersView({ dataRange }: { dataRange: DataRange }) {
     fetchData()
   }, [period.dateFrom, period.dateTo])
 
-  return (
-    <div className="space-y-6">
-      {/* Period Selector */}
-      <PeriodSelector onPeriodChange={setPeriod} dataRange={dataRange} />
+  const contextValue = {
+    expandedSections,
+    toggleSection,
+    expandAll,
+    collapseAll,
+  }
 
-      {/* Currently Viewing */}
-      <div className="text-sm text-muted-foreground">
-        Viewing: <span className="font-medium text-foreground">{period.label}</span>
-      </div>
+  return (
+    <ExpandCollapseContext.Provider value={contextValue}>
+      <div className="space-y-6">
+        {/* Period Selector */}
+        <PeriodSelector onPeriodChange={setPeriod} dataRange={dataRange} />
+
+        {/* Currently Viewing */}
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-muted-foreground">
+            Viewing: <span className="font-medium text-foreground">{period.label}</span>
+          </div>
+          {data && data.teamMembers.length > 0 && (
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={expandAll}
+              >
+                <ChevronDown className="h-4 w-4 mr-2" />
+                Expand All
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={collapseAll}
+              >
+                <ChevronUp className="h-4 w-4 mr-2" />
+                Collapse All
+              </Button>
+            </div>
+          )}
+        </div>
 
       {loading && !data ? (
         <div className="text-center py-12">
@@ -172,6 +252,7 @@ export function TeamMembersView({ dataRange }: { dataRange: DataRange }) {
           </div>
         </>
       )}
-    </div>
+      </div>
+    </ExpandCollapseContext.Provider>
   )
 }

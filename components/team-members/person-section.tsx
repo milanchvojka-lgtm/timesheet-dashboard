@@ -4,6 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, CartesianGrid, Cell } from 'recharts'
+import { ChevronDown, ChevronUp } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { useExpandCollapse } from './team-members-view'
 
 interface TeamMember {
   person: string
@@ -38,6 +41,9 @@ const PROJECT_COLORS: Record<string, string> = {
 }
 
 export function PersonSection({ member }: PersonSectionProps) {
+  const { expandedSections, toggleSection } = useExpandCollapse()
+  const isExpanded = expandedSections.has(member.person)
+
   const getDeviationBadge = (deviation: number | null) => {
     if (deviation === null) return null
     if (deviation >= 0) {
@@ -75,7 +81,21 @@ export function PersonSection({ member }: PersonSectionProps) {
       <Card>
         <CardHeader className="border-b">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-2xl">{member.person}</CardTitle>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => toggleSection(member.person)}
+                className="h-8 w-8 p-0"
+              >
+                {isExpanded ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
+              </Button>
+              <CardTitle className="text-2xl">{member.person}</CardTitle>
+            </div>
             <div className="flex gap-4 text-sm">
               <div className="text-right">
                 <p className="text-muted-foreground">Total Hours</p>
@@ -101,7 +121,8 @@ export function PersonSection({ member }: PersonSectionProps) {
           </div>
         </CardHeader>
 
-        <CardContent className="pt-6 space-y-8">
+        {isExpanded && (
+          <CardContent className="pt-6 space-y-8">
           {/* Projects Breakdown */}
           <div>
             <h3 className="text-lg font-semibold mb-4">Projects Breakdown</h3>
@@ -219,7 +240,8 @@ export function PersonSection({ member }: PersonSectionProps) {
               </div>
             </div>
           )}
-        </CardContent>
+          </CardContent>
+        )}
       </Card>
     </div>
   )
