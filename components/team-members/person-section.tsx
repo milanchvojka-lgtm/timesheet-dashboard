@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, CartesianGrid, Cell } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, CartesianGrid } from 'recharts'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useExpandCollapse } from './team-members-view'
@@ -71,7 +71,7 @@ export function PersonSection({ member }: PersonSectionProps) {
         fontFamily="inherit"
         dominantBaseline="middle"
       >
-        {value.toFixed(1)}h
+        {value.toFixed(2)} hrs
       </text>
     )
   }
@@ -162,27 +162,34 @@ export function PersonSection({ member }: PersonSectionProps) {
                   margin={{ top: 5, right: 120, left: 120, bottom: 5 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis type="number" domain={[0, 'auto']} />
+                  <XAxis
+                    type="number"
+                    domain={[0, 'auto']}
+                    tick={{
+                      fontSize: 12,
+                      fontFamily: "inherit",
+                      fill: "hsl(var(--muted-foreground))",
+                    }}
+                  />
                   <YAxis
                     type="category"
                     dataKey="project"
                     width={150}
+                    tick={{
+                      fontSize: 12,
+                      fontFamily: "inherit",
+                      fill: "hsl(var(--foreground))",
+                    }}
                     axisLine={false}
                     tickLine={false}
                   />
                   <Bar
                     dataKey="hours"
+                    fill="#7BD4B4"
                     radius={[0, 4, 4, 0]}
                     label={<CustomLabel />}
                     barSize={30}
-                  >
-                    {member.projects.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={PROJECT_COLORS[entry.project] || PROJECT_COLORS['Other']}
-                      />
-                    ))}
-                  </Bar>
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -220,11 +227,24 @@ export function PersonSection({ member }: PersonSectionProps) {
                     margin={{ top: 5, right: 120, left: 120, bottom: 5 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis type="number" domain={[0, 'auto']} />
+                    <XAxis
+                      type="number"
+                      domain={[0, 'auto']}
+                      tick={{
+                        fontSize: 12,
+                        fontFamily: "inherit",
+                        fill: "hsl(var(--muted-foreground))",
+                      }}
+                    />
                     <YAxis
                       type="category"
                       dataKey="activity"
                       width={150}
+                      tick={{
+                        fontSize: 12,
+                        fontFamily: "inherit",
+                        fill: "hsl(var(--foreground))",
+                      }}
                       axisLine={false}
                       tickLine={false}
                     />
