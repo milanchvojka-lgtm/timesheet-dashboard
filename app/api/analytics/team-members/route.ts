@@ -164,6 +164,9 @@ export async function GET(request: NextRequest) {
       }
     })
 
+    // Sort team members by actual FTE (highest to lowest)
+    teamMembers.sort((a, b) => b.actualFTE - a.actualFTE)
+
     // Calculate team summary
     const totalTeamHours = teamMembers.reduce((sum, m) => sum + m.totalHours, 0)
     const avgFTE = teamMembers.length > 0
