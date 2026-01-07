@@ -35,19 +35,36 @@ export async function GET(request: NextRequest) {
 
     const supabase = createServerAdminClient()
 
-    // Fetch all entries for the period
-    const { data: entries, error } = await supabase
-      .from('timesheet_entries')
-      .select('*')
-      .gte('date', dateFrom)
-      .lte('date', dateTo)
+    // Fetch timesheet entries in batches (Supabase has 1000-row limit)
+    let entries: any[] = []
+    let from = 0
+    const batchSize = 1000
+    let hasMore = true
 
-    if (error) {
-      console.error('[API] Error fetching timesheet entries:', error)
-      return NextResponse.json(
-        { error: 'Failed to fetch timesheet data' },
-        { status: 500 }
-      )
+    while (hasMore) {
+      const { data: batch, error } = await supabase
+        .from('timesheet_entries')
+        .select('*')
+        .gte('date', dateFrom)
+        .lte('date', dateTo)
+        .order('date', { ascending: true })
+        .range(from, from + batchSize - 1)
+
+      if (error) {
+        console.error('[API] Error fetching timesheet entries:', error)
+        return NextResponse.json(
+          { error: 'Failed to fetch timesheet data' },
+          { status: 500 }
+        )
+      }
+
+      if (batch && batch.length > 0) {
+        entries = entries.concat(batch)
+        hasMore = batch.length === batchSize
+        from += batchSize
+      } else {
+        hasMore = false
+      }
     }
 
     // Calculate working hours for the period
