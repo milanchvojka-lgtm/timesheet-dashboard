@@ -62,7 +62,7 @@ interface TeamMembersData {
   summary: {
     totalPeople: number
     totalHours: number
-    averageFTE: number
+    totalFTE: number
   }
   teamMembers: TeamMember[]
 }
@@ -211,8 +211,8 @@ export function TeamMembersView({ dataRange }: { dataRange: DataRange }) {
                   <p className="text-2xl font-bold">{data.summary.totalHours}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Average FTE</p>
-                  <p className="text-2xl font-bold">{data.summary.averageFTE}</p>
+                  <p className="text-sm text-muted-foreground">Total FTE</p>
+                  <p className="text-2xl font-bold">{data.summary.totalFTE}</p>
                 </div>
               </div>
             </CardContent>

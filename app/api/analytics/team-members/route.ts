@@ -169,9 +169,7 @@ export async function GET(request: NextRequest) {
 
     // Calculate team summary
     const totalTeamHours = teamMembers.reduce((sum, m) => sum + m.totalHours, 0)
-    const avgFTE = teamMembers.length > 0
-      ? Number((teamMembers.reduce((sum, m) => sum + m.actualFTE, 0) / teamMembers.length).toFixed(2))
-      : 0
+    const totalFTE = Number((teamMembers.reduce((sum, m) => sum + m.actualFTE, 0)).toFixed(2))
 
     return NextResponse.json({
       period: {
@@ -182,7 +180,7 @@ export async function GET(request: NextRequest) {
       summary: {
         totalPeople: teamMembers.length,
         totalHours: Number(totalTeamHours.toFixed(2)),
-        averageFTE: avgFTE
+        totalFTE: totalFTE
       },
       teamMembers
     })
