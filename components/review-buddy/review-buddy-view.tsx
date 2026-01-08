@@ -103,7 +103,7 @@ export function ReviewBuddyView() {
       <div>
         <h1 className="text-3xl font-bold flex items-center gap-2">
           <ClipboardCheck className="h-8 w-8" />
-          Review Buddy
+          Timesheet Review Buddy
         </h1>
         <p className="text-muted-foreground mt-2">
           Pre-upload validation tool - Check your timesheet file before importing to ensure all entries are properly paired

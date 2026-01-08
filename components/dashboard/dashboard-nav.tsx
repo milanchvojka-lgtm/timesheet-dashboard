@@ -5,41 +5,66 @@ import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Upload, TrendingUp, CheckCircle, Settings, HelpCircle, Users } from "lucide-react"
 
-const navItems = [
+interface NavItem {
+  title: string
+  href: string
+  icon: any
+  requiresTeamMember?: boolean
+}
+
+const allNavItems: NavItem[] = [
   {
     title: "Overview",
     href: "/overview",
     icon: TrendingUp,
+    requiresTeamMember: false, // Viewers can access
   },
   {
     title: "Team Members",
     href: "/team-members",
     icon: Users,
+    requiresTeamMember: false, // Viewers can access
   },
   {
     title: "Upload",
     href: "/upload",
     icon: Upload,
+    requiresTeamMember: true, // Team members only
   },
   {
-    title: "Review Buddy",
+    title: "Timesheet Review Buddy",
     href: "/review-buddy",
     icon: CheckCircle,
+    requiresTeamMember: true, // Team members only
   },
   {
     title: "Admin",
     href: "/admin",
     icon: Settings,
+    requiresTeamMember: true, // Team members only
   },
   {
     title: "Help",
     href: "/help",
     icon: HelpCircle,
+    requiresTeamMember: false, // Everyone can access
   },
 ]
 
-export function DashboardNav() {
+interface DashboardNavProps {
+  isTeamMember?: boolean
+}
+
+export function DashboardNav({ isTeamMember = false }: DashboardNavProps) {
   const pathname = usePathname()
+
+  // Filter nav items based on user role
+  const navItems = allNavItems.filter(item => {
+    if (item.requiresTeamMember && !isTeamMember) {
+      return false // Hide team member-only items from viewers
+    }
+    return true
+  })
 
   return (
     <nav className="border-b bg-background">

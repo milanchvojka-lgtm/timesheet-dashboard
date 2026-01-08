@@ -1,13 +1,13 @@
 import { redirect } from "next/navigation"
-import { getServerSession } from "@/lib/auth-utils"
+import { getServerSession, checkTeamMember } from "@/lib/auth-utils"
 import { DashboardNav } from "@/components/dashboard/dashboard-nav"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 
 /**
- * Review Buddy Layout
+ * Timesheet Review Buddy Layout
  *
- * This layout wraps the review buddy page and enforces authentication.
- * Shares the same header and navigation as other dashboard pages.
+ * This layout wraps the timesheet review buddy page and enforces authentication.
+ * Only team members can access this page - viewers are redirected to overview.
  */
 export default async function ReviewBuddyLayout({
   children,
@@ -22,10 +22,18 @@ export default async function ReviewBuddyLayout({
     redirect("/login?callbackUrl=/review-buddy")
   }
 
+  // Check if user is a team member
+  const isTeamMember = await checkTeamMember(session.user.email)
+
+  // Redirect viewers to overview (team members only)
+  if (!isTeamMember) {
+    redirect("/overview")
+  }
+
   return (
     <div className="min-h-screen bg-background">
-      <DashboardHeader user={session.user} />
-      <DashboardNav />
+      <DashboardHeader user={session.user} isTeamMember={isTeamMember} />
+      <DashboardNav isTeamMember={isTeamMember} />
       <main className="container mx-auto px-4 py-6">
         {children}
       </main>

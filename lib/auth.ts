@@ -40,8 +40,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
   callbacks: {
     /**
-     * Allowlist-based authentication
-     * Only users explicitly added as team members can log in
+     * Domain-based authentication with two-tier permissions
+     * - All @2fresh.cz users can log in (viewers by default)
+     * - Team members get full access (managed in Admin panel)
      */
     async signIn({ user, profile }) {
       const email = user.email || profile?.email
@@ -57,35 +58,44 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         return false
       }
 
-      // Check if user is in the allowlist (is_team_member = true)
       try {
         const supabase = createServerAdminClient()
 
-        const { data } = await supabase
+        // Check if user exists
+        const { data: existingUser } = await supabase
           .from("users")
-          .select("is_team_member")
+          .select("id, is_team_member")
           .eq("email", email)
           .maybeSingle()
 
-        // If user doesn't exist or is not a team member, reject login
-        if (!data || !data.is_team_member) {
-          console.warn(`Login rejected: ${email} is not in the team members allowlist`)
-          return false
+        if (existingUser) {
+          // Update existing user info
+          await supabase
+            .from("users")
+            .update({
+              name: user.name,
+              avatar_url: user.image,
+            })
+            .eq("email", email)
+
+          console.log(`Login successful for ${existingUser.is_team_member ? 'team member' : 'viewer'}: ${email}`)
+        } else {
+          // Create new user as viewer (is_team_member = false)
+          await supabase
+            .from("users")
+            .insert({
+              email: email,
+              name: user.name,
+              avatar_url: user.image,
+              is_team_member: false, // Default: read-only viewer
+            })
+
+          console.log(`New viewer account created: ${email}`)
         }
 
-        // Update user info on successful login (name, avatar)
-        await supabase
-          .from("users")
-          .update({
-            name: user.name,
-            avatar_url: user.image,
-          })
-          .eq("email", email)
-
-        console.log(`Login successful for team member: ${email}`)
         return true
       } catch (error) {
-        console.error("Error checking user allowlist:", error)
+        console.error("Error during sign-in:", error)
         return false
       }
     },

@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation"
-import { getServerSession } from "@/lib/auth-utils"
+import { getServerSession, checkTeamMember } from "@/lib/auth-utils"
 import { DashboardNav } from "@/components/dashboard/dashboard-nav"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 
@@ -22,10 +22,13 @@ export default async function HelpLayout({
     redirect("/login?callbackUrl=/help")
   }
 
+  // Check if user is a team member
+  const isTeamMember = await checkTeamMember(session.user.email)
+
   return (
     <div className="min-h-screen bg-background">
-      <DashboardHeader user={session.user} />
-      <DashboardNav />
+      <DashboardHeader user={session.user} isTeamMember={isTeamMember} />
+      <DashboardNav isTeamMember={isTeamMember} />
       <main>
         {children}
       </main>

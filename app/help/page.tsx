@@ -208,18 +208,18 @@ export default function HelpPage() {
               </p>
             </div>
 
-            {/* Review Buddy */}
+            {/* Timesheet Review Buddy */}
             <div>
               <h3 className="font-semibold mb-2 flex items-center gap-2">
                 <CheckCircle className="h-4 w-4" />
-                Review Buddy
+                Timesheet Review Buddy
               </h3>
               <p className="mb-2">
                 Validate your timesheet file before uploading to catch mistakes early:
               </p>
               <ol className="list-decimal list-inside space-y-2 ml-4">
                 <li>Export your timesheet from Costlocker</li>
-                <li>Go to Review Buddy page</li>
+                <li>Go to Timesheet Review Buddy page</li>
                 <li>Upload the file for validation (no data is saved)</li>
                 <li>Review quality score and list of unpaired items</li>
                 <li>Fix any issues in Costlocker</li>
@@ -227,7 +227,7 @@ export default function HelpPage() {
                 <li>Upload via the regular Upload page</li>
               </ol>
               <p className="mt-2 text-sm text-muted-foreground">
-                Review Buddy uses strict validation to help maintain data quality.
+                Timesheet Review Buddy uses strict validation to help maintain data quality.
               </p>
             </div>
           </CardContent>
@@ -301,7 +301,7 @@ export default function HelpPage() {
               <h3 className="font-semibold mb-2">Uploading New Data</h3>
               <ol className="list-decimal list-inside space-y-2 ml-4">
                 <li>Export timesheet from Costlocker (CSV or Excel)</li>
-                <li>Optional: Use Review Buddy to validate quality</li>
+                <li>Optional: Use Timesheet Review Buddy to validate quality</li>
                 <li>Go to Upload page</li>
                 <li>Upload the file</li>
                 <li>Review upload statistics</li>
@@ -333,7 +333,7 @@ export default function HelpPage() {
           <CardContent>
             <ul className="list-disc list-inside space-y-2">
               <li>
-                <strong>Use Review Buddy before uploading</strong> - Catch categorization
+                <strong>Use Timesheet Review Buddy before uploading</strong> - Catch categorization
                 mistakes before they enter the system
               </li>
               <li>

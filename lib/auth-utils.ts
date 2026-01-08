@@ -170,3 +170,56 @@ export async function requireTeamMember() {
 
   return session
 }
+
+/**
+ * Check if current user is a viewer (read-only)
+ *
+ * A viewer is an authenticated user who is NOT a team member.
+ * Viewers can only view data, not modify it.
+ *
+ * @returns true if user is a viewer
+ *
+ * @example
+ * ```typescript
+ * const isViewer = await isUserViewer()
+ * if (isViewer) {
+ *   // Show read-only UI
+ * }
+ * ```
+ */
+export async function isUserViewer(): Promise<boolean> {
+  const session = await getServerSession()
+
+  if (!session?.user?.email) {
+    return false
+  }
+
+  const isTeamMember = await checkTeamMember(session.user.email)
+  return !isTeamMember
+}
+
+/**
+ * Get user role
+ *
+ * Returns the user's role: 'team_member', 'viewer', or null if not authenticated
+ *
+ * @returns User role or null
+ *
+ * @example
+ * ```typescript
+ * const role = await getUserRole()
+ * if (role === 'viewer') {
+ *   // Show read-only message
+ * }
+ * ```
+ */
+export async function getUserRole(): Promise<'team_member' | 'viewer' | null> {
+  const session = await getServerSession()
+
+  if (!session?.user?.email) {
+    return null
+  }
+
+  const isTeamMember = await checkTeamMember(session.user.email)
+  return isTeamMember ? 'team_member' : 'viewer'
+}

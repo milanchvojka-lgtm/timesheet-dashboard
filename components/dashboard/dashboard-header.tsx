@@ -3,7 +3,8 @@
 import Link from "next/link"
 import { UserMenu } from "./user-menu"
 import { ThemeToggle } from "./theme-toggle"
-import { BarChart3 } from "lucide-react"
+import { BarChart3, Eye } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 
 interface DashboardHeaderProps {
   user: {
@@ -11,9 +12,10 @@ interface DashboardHeaderProps {
     email?: string | null
     image?: string | null
   }
+  isTeamMember?: boolean
 }
 
-export function DashboardHeader({ user }: DashboardHeaderProps) {
+export function DashboardHeader({ user, isTeamMember = true }: DashboardHeaderProps) {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
@@ -28,8 +30,14 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
           </div>
         </Link>
 
-        {/* Right Side: Theme Toggle + User Menu */}
+        {/* Right Side: Viewer Badge + Theme Toggle + User Menu */}
         <div className="flex items-center gap-4">
+          {!isTeamMember && (
+            <Badge variant="secondary" className="flex items-center gap-1">
+              <Eye className="h-3 w-3" />
+              Read-Only
+            </Badge>
+          )}
           <ThemeToggle />
           <UserMenu user={user} />
         </div>

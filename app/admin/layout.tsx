@@ -1,9 +1,15 @@
 import { redirect } from 'next/navigation'
-import { getServerSession } from '@/lib/auth-utils'
+import { getServerSession, checkTeamMember } from '@/lib/auth-utils'
 import { DashboardHeader } from '@/components/dashboard/dashboard-header'
 import { DashboardNav } from '@/components/dashboard/dashboard-nav'
 import { AdminNav } from '@/components/admin/admin-nav'
 
+/**
+ * Admin Layout
+ *
+ * This layout wraps the admin pages and enforces authentication.
+ * Only team members can access this page - viewers are redirected to overview.
+ */
 export default async function AdminLayout({
   children,
 }: {
@@ -16,13 +22,21 @@ export default async function AdminLayout({
     redirect('/login?callbackUrl=/admin')
   }
 
+  // Check if user is a team member
+  const isTeamMember = await checkTeamMember(session.user.email)
+
+  // Redirect viewers to overview (team members only)
+  if (!isTeamMember) {
+    redirect('/overview')
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* Main Header */}
-      <DashboardHeader user={session.user} />
+      <DashboardHeader user={session.user} isTeamMember={isTeamMember} />
 
       {/* Main Navigation */}
-      <DashboardNav />
+      <DashboardNav isTeamMember={isTeamMember} />
 
       {/* Admin Sub-Navigation */}
       <AdminNav />
