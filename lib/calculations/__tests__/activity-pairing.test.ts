@@ -21,18 +21,18 @@ describe('Activity Categorization', () => {
   ]
 
   describe('categorizeActivity', () => {
-    it('should categorize hiring activities with prefix', () => {
-      const category = categorizeActivity('Hiring: Interview with candidate', '', 'OPS', mockKeywords)
+    it('should categorize hiring activities with prefix in description', () => {
+      const category = categorizeActivity('Internal', 'Hiring: Lada Čápová', 'OPS', mockKeywords)
       expect(category).toBe('OPS_Hiring')
     })
 
-    it('should categorize jobs activities with prefix', () => {
-      const category = categorizeActivity('Jobs: Update job postings', '', 'OPS', mockKeywords)
+    it('should categorize jobs activities with prefix in description', () => {
+      const category = categorizeActivity('Internal', 'Jobs: Eurowag, komunikácia', 'OPS', mockKeywords)
       expect(category).toBe('OPS_Jobs')
     })
 
-    it('should categorize reviews activities with prefix', () => {
-      const category = categorizeActivity('Review: Design review session', '', 'OPS', mockKeywords)
+    it('should categorize reviews activities with prefix in description', () => {
+      const category = categorizeActivity('Internal', 'Review: Petr Tejkal + zpracování', 'OPS', mockKeywords)
       expect(category).toBe('OPS_Reviews')
     })
 
@@ -42,25 +42,25 @@ describe('Activity Categorization', () => {
     })
 
     it('should be case-insensitive', () => {
-      const category1 = categorizeActivity('HIRING: task', '', 'OPS', mockKeywords)
-      const category2 = categorizeActivity('hiring: task', '', 'OPS', mockKeywords)
-      const category3 = categorizeActivity('Hiring: task', '', 'OPS', mockKeywords)
+      const category1 = categorizeActivity('Internal', 'HIRING: task', 'OPS', mockKeywords)
+      const category2 = categorizeActivity('Internal', 'hiring: task', 'OPS', mockKeywords)
+      const category3 = categorizeActivity('Internal', 'Hiring: task', 'OPS', mockKeywords)
 
       expect(category1).toBe('OPS_Hiring')
       expect(category2).toBe('OPS_Hiring')
       expect(category3).toBe('OPS_Hiring')
     })
 
-    it('should NOT match keywords in description only', () => {
-      // Keyword in description but not as activity name prefix → no match
-      const category = categorizeActivity('Meeting', 'Discussed hiring process', 'OPS', mockKeywords)
+    it('should NOT match keyword mid-text in description', () => {
+      // "hiring" appears mid-text, not as prefix with ":"
+      const category = categorizeActivity('Internal', 'Discussed hiring process', 'OPS', mockKeywords)
       // OPS project without prefix match → OPS_Guiding in lenient mode
       expect(category).toBe('OPS_Guiding')
     })
 
-    it('should NOT match keywords in the middle of activity name', () => {
-      // "jobs" appears mid-text, not as a prefix with ":"
-      const category = categorizeActivity('design ops status a jobs ops', '', 'Internal', mockKeywords)
+    it('should NOT match keyword mid-text in description on other projects', () => {
+      // "jobs" appears mid-text on Internal project → not a tagged entry
+      const category = categorizeActivity('Internal', 'design ops status a jobs ops', 'Internal', mockKeywords)
       expect(category).toBe('Other')
     })
 
@@ -69,24 +69,36 @@ describe('Activity Categorization', () => {
       expect(category).toBe('Other')
     })
 
-    it('should handle null description', () => {
-      const category = categorizeActivity('Interview: candidate screening', null, 'OPS', mockKeywords)
-      expect(category).toBe('OPS_Hiring')
+    it('should handle null description on OPS project', () => {
+      // No description → no prefix match → OPS fallback (lenient = OPS_Guiding)
+      const category = categorizeActivity('Internal', null, 'OPS', mockKeywords)
+      expect(category).toBe('OPS_Guiding')
     })
 
-    it('should handle whitespace around colon', () => {
-      const cat1 = categorizeActivity('Jobs: posting', '', 'OPS', mockKeywords)
-      const cat2 = categorizeActivity('Jobs:posting', '', 'OPS', mockKeywords)
-      const cat3 = categorizeActivity('Jobs : posting', '', 'OPS', mockKeywords)
+    it('should match with colon, without colon, and with whitespace', () => {
+      const cat1 = categorizeActivity('Internal', 'Jobs: posting', 'OPS', mockKeywords)
+      const cat2 = categorizeActivity('Internal', 'Jobs:posting', 'OPS', mockKeywords)
+      const cat3 = categorizeActivity('Internal', 'Jobs posting', 'OPS', mockKeywords)
+      const cat4 = categorizeActivity('Internal', 'Jobs', 'OPS', mockKeywords)
 
       expect(cat1).toBe('OPS_Jobs')
       expect(cat2).toBe('OPS_Jobs')
       expect(cat3).toBe('OPS_Jobs')
+      expect(cat4).toBe('OPS_Jobs')
+    })
+
+    it('should NOT partially match keywords', () => {
+      // "job" keyword should not match "jobs" at start
+      const category = categorizeActivity('Internal', 'jobsomething else', 'OPS', mockKeywords)
+      // "job" starts it but next char is "s" — not a word boundary
+      // "jobs" keyword does start it and next char is "o" — also not a word boundary
+      // No match → OPS fallback (lenient = OPS_Guiding)
+      expect(category).toBe('OPS_Guiding')
     })
 
     it('should mark keyword prefix on wrong project as Unpaired', () => {
-      // "Jobs:" prefix on Internal project → mistake
-      const category = categorizeActivity('Jobs: posting update', '', 'Internal', mockKeywords)
+      // "Jobs:" prefix in description on Internal project → mistake
+      const category = categorizeActivity('Internal', 'Jobs: posting update', 'Internal', mockKeywords)
       expect(category).toBe('Unpaired')
     })
   })
@@ -100,10 +112,10 @@ describe('Activity Categorization', () => {
         project_id: 100,
         project_name: 'OPS',
         activity_id: 200,
-        activity_name: 'Interview: Candidate screening',
+        activity_name: 'Internal',
         date: '2025-11-15',
         hours: 2,
-        description: 'Candidate interview',
+        description: 'Interview: Candidate screening',
       },
       {
         id: '2',

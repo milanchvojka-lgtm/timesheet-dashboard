@@ -41,14 +41,14 @@ export interface ActivityKeyword {
  * @returns Category of the activity
  *
  * @example
- * categorizeActivity('Hiring: Interview with candidate', '', 'Design tým OPS_2025', keywords)
- * // Returns: 'OPS_Hiring' (keyword at start followed by ":")
+ * categorizeActivity('Internal', 'Hiring: Interview with candidate', 'Design tým OPS_2025', keywords)
+ * // Returns: 'OPS_Hiring' (keyword at start of description followed by ":")
  *
- * categorizeActivity('Jobs: Posting', 'Update jobs', 'Design tým Interní_2025', keywords)
+ * categorizeActivity('Internal', 'Jobs: Posting', 'Design tým Interní_2025', keywords)
  * // Returns: 'Unpaired' (Jobs keyword prefix on Internal project - mistake!)
  *
- * categorizeActivity('design ops status a jobs ops', '', 'Design tým Interní_2025', keywords)
- * // Returns: 'Other' ("jobs" not at start with ":" - not a tagged entry)
+ * categorizeActivity('Internal', 'design ops status a jobs ops', 'Design tým Interní_2025', keywords)
+ * // Returns: 'Other' ("jobs" not at start of description with ":" - not a tagged entry)
  *
  * categorizeActivity('Meeting', 'Team sync', 'Design tým OPS_2025', keywords)
  * // Returns: 'Unpaired' (OPS project needs specific keywords)
@@ -63,8 +63,17 @@ export function categorizeActivity(
   keywords: ActivityKeyword[],
   strictValidation: boolean = false
 ): ActivityCategory {
-  // Activity name for prefix:colon matching (OPS_Hiring, OPS_Jobs, OPS_Reviews)
-  const activityNameLower = activityName.trim().toLowerCase()
+  // Description for prefix matching (OPS_Hiring, OPS_Jobs, OPS_Reviews)
+  // Keyword must be at the start, followed by ":", whitespace, or end of string
+  const descriptionLower = (description || '').trim().toLowerCase()
+
+  // Check if description starts with keyword as a complete word
+  const matchesPrefix = (desc: string, kw: string): boolean => {
+    if (!desc.startsWith(kw)) return false
+    if (desc.length === kw.length) return true // exact match
+    const nextChar = desc[kw.length]
+    return nextChar === ':' || nextChar === ' ' || nextChar === '\t'
+  }
   // Combined text for Guiding keyword matching (matches anywhere)
   const searchText = `${activityName} ${description || ''}`.toLowerCase()
   const projectNameLower = projectName.toLowerCase()
@@ -78,9 +87,9 @@ export function categorizeActivity(
   }
 
   // Check for hiring keywords (ONLY valid on OPS projects)
-  // Must appear at the beginning of activity name followed by ":"
+  // Must appear at the beginning of description as a complete word
   for (const keyword of categorizedKeywords.OPS_Hiring) {
-    if (activityNameLower.startsWith(keyword) && activityNameLower.slice(keyword.length).trimStart().startsWith(':')) {
+    if (matchesPrefix(descriptionLower, keyword)) {
       // Only valid on OPS projects (not Guiding, not Internal, not R&D, etc.)
       if (projectNameLower.includes('ops')) {
         return 'OPS_Hiring'
@@ -91,9 +100,9 @@ export function categorizeActivity(
   }
 
   // Check for jobs keywords (ONLY valid on OPS projects)
-  // Must appear at the beginning of activity name followed by ":"
+  // Must appear at the beginning of description as a complete word
   for (const keyword of categorizedKeywords.OPS_Jobs) {
-    if (activityNameLower.startsWith(keyword) && activityNameLower.slice(keyword.length).trimStart().startsWith(':')) {
+    if (matchesPrefix(descriptionLower, keyword)) {
       // Only valid on OPS projects (not Guiding, not Internal, not R&D, etc.)
       if (projectNameLower.includes('ops')) {
         return 'OPS_Jobs'
@@ -104,9 +113,9 @@ export function categorizeActivity(
   }
 
   // Check for reviews keywords (ONLY valid on OPS projects)
-  // Must appear at the beginning of activity name followed by ":"
+  // Must appear at the beginning of description as a complete word
   for (const keyword of categorizedKeywords.OPS_Reviews) {
-    if (activityNameLower.startsWith(keyword) && activityNameLower.slice(keyword.length).trimStart().startsWith(':')) {
+    if (matchesPrefix(descriptionLower, keyword)) {
       // Only valid on OPS projects (not Guiding, not Internal, not R&D, etc.)
       if (projectNameLower.includes('ops')) {
         return 'OPS_Reviews'
