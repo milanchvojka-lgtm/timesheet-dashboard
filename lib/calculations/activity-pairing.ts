@@ -41,11 +41,14 @@ export interface ActivityKeyword {
  * @returns Category of the activity
  *
  * @example
- * categorizeActivity('Interview', 'Interview with candidate', 'Design tým OPS_2025', keywords)
- * // Returns: 'OPS_Hiring'
+ * categorizeActivity('Hiring: Interview with candidate', '', 'Design tým OPS_2025', keywords)
+ * // Returns: 'OPS_Hiring' (keyword at start followed by ":")
  *
  * categorizeActivity('Jobs: Posting', 'Update jobs', 'Design tým Interní_2025', keywords)
- * // Returns: 'Unpaired' (Jobs keyword on Internal project - mistake!)
+ * // Returns: 'Unpaired' (Jobs keyword prefix on Internal project - mistake!)
+ *
+ * categorizeActivity('design ops status a jobs ops', '', 'Design tým Interní_2025', keywords)
+ * // Returns: 'Other' ("jobs" not at start with ":" - not a tagged entry)
  *
  * categorizeActivity('Meeting', 'Team sync', 'Design tým OPS_2025', keywords)
  * // Returns: 'Unpaired' (OPS project needs specific keywords)
@@ -60,7 +63,9 @@ export function categorizeActivity(
   keywords: ActivityKeyword[],
   strictValidation: boolean = false
 ): ActivityCategory {
-  // Combine activity name and description for matching
+  // Activity name for prefix:colon matching (OPS_Hiring, OPS_Jobs, OPS_Reviews)
+  const activityNameLower = activityName.trim().toLowerCase()
+  // Combined text for Guiding keyword matching (matches anywhere)
   const searchText = `${activityName} ${description || ''}`.toLowerCase()
   const projectNameLower = projectName.toLowerCase()
 
@@ -73,8 +78,9 @@ export function categorizeActivity(
   }
 
   // Check for hiring keywords (ONLY valid on OPS projects)
+  // Must appear at the beginning of activity name followed by ":"
   for (const keyword of categorizedKeywords.OPS_Hiring) {
-    if (searchText.includes(keyword)) {
+    if (activityNameLower.startsWith(keyword) && activityNameLower.slice(keyword.length).trimStart().startsWith(':')) {
       // Only valid on OPS projects (not Guiding, not Internal, not R&D, etc.)
       if (projectNameLower.includes('ops')) {
         return 'OPS_Hiring'
@@ -85,8 +91,9 @@ export function categorizeActivity(
   }
 
   // Check for jobs keywords (ONLY valid on OPS projects)
+  // Must appear at the beginning of activity name followed by ":"
   for (const keyword of categorizedKeywords.OPS_Jobs) {
-    if (searchText.includes(keyword)) {
+    if (activityNameLower.startsWith(keyword) && activityNameLower.slice(keyword.length).trimStart().startsWith(':')) {
       // Only valid on OPS projects (not Guiding, not Internal, not R&D, etc.)
       if (projectNameLower.includes('ops')) {
         return 'OPS_Jobs'
@@ -97,8 +104,9 @@ export function categorizeActivity(
   }
 
   // Check for reviews keywords (ONLY valid on OPS projects)
+  // Must appear at the beginning of activity name followed by ":"
   for (const keyword of categorizedKeywords.OPS_Reviews) {
-    if (searchText.includes(keyword)) {
+    if (activityNameLower.startsWith(keyword) && activityNameLower.slice(keyword.length).trimStart().startsWith(':')) {
       // Only valid on OPS projects (not Guiding, not Internal, not R&D, etc.)
       if (projectNameLower.includes('ops')) {
         return 'OPS_Reviews'
