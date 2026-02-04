@@ -69,7 +69,7 @@ export function categorizeActivity(
     OPS_Hiring: keywords.filter((k) => k.category === 'OPS_Hiring' || k.category === 'OPS Hiring').map((k) => k.keyword.toLowerCase()),
     OPS_Jobs: keywords.filter((k) => k.category === 'OPS_Jobs' || k.category === 'OPS Jobs').map((k) => k.keyword.toLowerCase()),
     OPS_Reviews: keywords.filter((k) => k.category === 'OPS_Reviews' || k.category === 'OPS Reviews').map((k) => k.keyword.toLowerCase()),
-    OPS_Guiding: keywords.filter((k) => k.category === 'OPS_Guiding' || k.category === 'OPS Guiding' || k.category === 'OPS General').map((k) => k.keyword.toLowerCase()),
+    OPS_Guiding: keywords.filter((k) => k.category === 'OPS_Guiding' || k.category === 'OPS Guiding').map((k) => k.keyword.toLowerCase()),
   }
 
   // Check for hiring keywords (ONLY valid on OPS projects)

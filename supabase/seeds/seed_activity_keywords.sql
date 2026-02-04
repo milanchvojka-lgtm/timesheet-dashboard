@@ -31,12 +31,3 @@ INSERT INTO activity_keywords (keyword, category, description, is_active) VALUES
   ('one-on-one', 'OPS Reviews', 'Matches one-on-one meetings and reviews', true)
 ON CONFLICT (keyword) DO NOTHING;
 
--- Additional OPS-related keywords
-INSERT INTO activity_keywords (keyword, category, description, is_active) VALUES
-  ('team meeting', 'OPS General', 'Matches team meeting activities', true),
-  ('standup', 'OPS General', 'Matches standup meeting activities', true),
-  ('retrospective', 'OPS General', 'Matches retrospective meeting activities', true),
-  ('planning', 'OPS General', 'Matches planning activities', true),
-  ('admin', 'OPS General', 'Matches administrative tasks', true),
-  ('administration', 'OPS General', 'Matches administrative tasks', true)
-ON CONFLICT (keyword) DO NOTHING;
