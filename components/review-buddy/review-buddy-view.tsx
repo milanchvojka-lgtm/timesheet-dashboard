@@ -169,13 +169,13 @@ export function ReviewBuddyView() {
                 Overall Quality Score
               </CardTitle>
               <CardDescription>
-                Results for {validationResult.filename} ({(validationResult.fileSize / 1024).toFixed(2)} KB)
+                Results for {validationResult.filename} ({(validationResult.fileSize / 1024).toFixed(2)} KB). Only OPS and Guiding project entries are evaluated — regular billable project work is excluded.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid gap-4 md:grid-cols-4">
                 <div>
-                  <div className="text-sm text-muted-foreground">Total Entries</div>
+                  <div className="text-sm text-muted-foreground">OPS/Guiding Entries</div>
                   <div className="text-2xl font-bold">{validationResult.totalEntries}</div>
                 </div>
                 <div>
@@ -273,7 +273,7 @@ export function ReviewBuddyView() {
               <CardHeader>
                 <CardTitle>Quality by Person</CardTitle>
                 <CardDescription>
-                  Individual quality scores for each team member in this file
+                  Individual quality scores for each team member. Counts reflect OPS and Guiding project entries only — regular billable work is not included.
                 </CardDescription>
               </CardHeader>
               <CardContent>
