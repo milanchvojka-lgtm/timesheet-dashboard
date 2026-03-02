@@ -15,11 +15,20 @@ import { FolderKanban } from "lucide-react"
 import {
   BarChart,
   Bar,
+  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
   ResponsiveContainer,
+  AreaChart,
+  Area,
+  LineChart,
+  Line,
+  Tooltip,
+  Legend,
 } from "recharts"
+import { PeriodType } from "@/components/overview/period-selector"
+import { PROJECT_COLORS } from "@/config/colors"
 
 interface ProjectData {
   category: string
@@ -32,10 +41,12 @@ interface ProjectData {
 interface ProjectsSectionProps {
   dateFrom: string
   dateTo: string
+  periodType: PeriodType
 }
 
-export function ProjectsSection({ dateFrom, dateTo }: ProjectsSectionProps) {
+export function ProjectsSection({ dateFrom, dateTo, periodType }: ProjectsSectionProps) {
   const [data, setData] = useState<ProjectData[]>([])
+  const [trends, setTrends] = useState<Array<Record<string, number | string>>>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -54,6 +65,7 @@ export function ProjectsSection({ dateFrom, dateTo }: ProjectsSectionProps) {
         }
 
         const result = await response.json()
+        setTrends(result.trends || [])
         setData(result.summary || [])
       } catch (err) {
         console.error('Projects fetch error:', err)
@@ -141,6 +153,99 @@ export function ProjectsSection({ dateFrom, dateTo }: ProjectsSectionProps) {
           </div>
         )}
 
+        {/* Quarter: single total FTE trend line */}
+        {periodType === 'quarter' && trends.length > 1 && (() => {
+          const PROJECT_CATEGORIES = ['OPS', 'Internal', 'R&D', 'Guiding', 'PR', 'UX Maturity']
+          const trendData = trends.map(t => ({
+            month: t.month,
+            totalFTE: PROJECT_CATEGORIES.reduce((sum, cat) => sum + (Number(t[cat]) || 0), 0)
+          }))
+          return (
+            <div className="mt-8 pt-8 border-t">
+              <h3 className="text-sm font-medium mb-4">Total FTE Trend</h3>
+              <ResponsiveContainer width="100%" height={200}>
+                <LineChart data={trendData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis
+                    dataKey="month"
+                    className="text-xs"
+                    tickFormatter={(value) => {
+                      const [year, month] = String(value).split('-')
+                      return `${month}/${year.slice(2)}`
+                    }}
+                  />
+                  <YAxis className="text-xs" />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--background))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '6px',
+                    }}
+                    labelFormatter={(value) => `Month: ${value}`}
+                    formatter={(value) => [`${(value as number).toFixed(2)} FTE`, 'Total']}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="totalFTE"
+                    stroke="#7BD4B4"
+                    strokeWidth={2}
+                    dot={{ fill: '#7BD4B4' }}
+                    name="Total FTE"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          )
+        })()}
+
+        {/* Year / Range: stacked area chart per project category */}
+        {(periodType === 'year' || periodType === 'range') && trends.length > 1 && (() => {
+          const PROJECT_CATEGORIES = ['OPS', 'Internal', 'R&D', 'Guiding', 'PR', 'UX Maturity'] as const
+          const activeCategories = PROJECT_CATEGORIES.filter(cat =>
+            trends.some(t => Number(t[cat]) > 0)
+          )
+          if (activeCategories.length === 0) return null
+          return (
+            <div className="mt-8 pt-8 border-t">
+              <h3 className="text-sm font-medium mb-4">FTE Trend by Project</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart data={trends} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis
+                    dataKey="month"
+                    className="text-xs"
+                    tickFormatter={(value) => {
+                      const [year, month] = String(value).split('-')
+                      return `${month}/${year.slice(2)}`
+                    }}
+                  />
+                  <YAxis className="text-xs" />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--background))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '6px',
+                    }}
+                    labelFormatter={(value) => `Month: ${value}`}
+                  />
+                  <Legend />
+                  {activeCategories.map(cat => (
+                    <Area
+                      key={cat}
+                      type="monotone"
+                      dataKey={cat}
+                      stackId="1"
+                      stroke={PROJECT_COLORS[cat as keyof typeof PROJECT_COLORS] || '#94a3b8'}
+                      fill={PROJECT_COLORS[cat as keyof typeof PROJECT_COLORS] || '#94a3b8'}
+                      fillOpacity={0.6}
+                    />
+                  ))}
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          )
+        })()}
+
         {/* Chart: Show all projects with FTE data */}
         {data.length > 0 &&
           (() => {
@@ -218,11 +323,18 @@ export function ProjectsSection({ dateFrom, dateTo }: ProjectsSectionProps) {
                     />
                     <Bar
                       dataKey="fte"
-                      fill="#7BD4B4"
                       radius={[0, 4, 4, 0]}
                       label={<CustomLabel />}
                       barSize={30}
-                    />
+                    >
+                      {chartData.map((entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={PROJECT_COLORS[entry.name as keyof typeof PROJECT_COLORS] || '#94a3b8'}
+                          fillOpacity={0.6}
+                        />
+                      ))}
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               </div>

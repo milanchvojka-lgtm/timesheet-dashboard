@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts"
+import { PERSON_COLORS } from "@/config/colors"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
@@ -32,10 +33,6 @@ interface TeamTabProps {
   dateTo: string
 }
 
-const PERSON_COLORS = [
-  '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899',
-  '#06b6d4', '#84cc16', '#f97316', '#14b8a6', '#a855f7'
-]
 
 export function TeamTab({ dateFrom, dateTo }: TeamTabProps) {
   const [data, setData] = useState<TeamData | null>(null)

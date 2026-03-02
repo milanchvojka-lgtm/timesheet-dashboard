@@ -81,13 +81,13 @@ export function OverviewView({ dataRange }: OverviewViewProps) {
       />
 
       {/* Projects Section */}
-      <ProjectsSection dateFrom={period.dateFrom} dateTo={period.dateTo} />
+      <ProjectsSection dateFrom={period.dateFrom} dateTo={period.dateTo} periodType={period.type} />
 
       {/* Personnel Section */}
-      <PersonnelSection dateFrom={period.dateFrom} dateTo={period.dateTo} />
+      <PersonnelSection dateFrom={period.dateFrom} dateTo={period.dateTo} periodType={period.type} />
 
       {/* Activities Section */}
-      <ActivitiesSection dateFrom={period.dateFrom} dateTo={period.dateTo} />
+      <ActivitiesSection dateFrom={period.dateFrom} dateTo={period.dateTo} periodType={period.type} />
 
       {/* Unpaired Section */}
       <UnpairedSection dateFrom={period.dateFrom} dateTo={period.dateTo} />

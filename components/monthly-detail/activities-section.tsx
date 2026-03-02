@@ -15,11 +15,20 @@ import { Activity } from "lucide-react"
 import {
   BarChart,
   Bar,
+  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
   ResponsiveContainer,
+  AreaChart,
+  Area,
+  LineChart,
+  Line,
+  Tooltip,
+  Legend,
 } from "recharts"
+import { PeriodType } from "@/components/overview/period-selector"
+import { ACTIVITY_COLORS } from "@/config/colors"
 
 interface ActivityData {
   category: string
@@ -31,10 +40,12 @@ interface ActivityData {
 interface ActivitiesSectionProps {
   dateFrom: string
   dateTo: string
+  periodType: PeriodType
 }
 
-export function ActivitiesSection({ dateFrom, dateTo }: ActivitiesSectionProps) {
+export function ActivitiesSection({ dateFrom, dateTo, periodType }: ActivitiesSectionProps) {
   const [data, setData] = useState<ActivityData[]>([])
+  const [trends, setTrends] = useState<Array<Record<string, number | string>>>([])
   const [qualityScore, setQualityScore] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -54,6 +65,7 @@ export function ActivitiesSection({ dateFrom, dateTo }: ActivitiesSectionProps) 
         }
 
         const result = await response.json()
+        setTrends(result.trends || [])
 
         interface CategorizedEntry {
           date: string
@@ -227,6 +239,100 @@ export function ActivitiesSection({ dateFrom, dateTo }: ActivitiesSectionProps) 
           </div>
         )}
 
+        {/* Quarter: single total OPS trend line */}
+        {periodType === 'quarter' && trends.length > 1 && (() => {
+          const OPS_CATEGORIES = ['OPS_Hiring', 'OPS_Jobs', 'OPS_Reviews', 'OPS_Guiding']
+          const trendData = trends.map(t => ({
+            month: t.month,
+            totalHours: OPS_CATEGORIES.reduce((sum, cat) => sum + (Number(t[cat]) || 0), 0)
+          }))
+          return (
+            <div className="mt-8 pt-8 border-t">
+              <h3 className="text-sm font-medium mb-4">OPS Effort Trend</h3>
+              <ResponsiveContainer width="100%" height={200}>
+                <LineChart data={trendData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis
+                    dataKey="month"
+                    className="text-xs"
+                    tickFormatter={(value) => {
+                      const [year, month] = String(value).split('-')
+                      return `${month}/${year.slice(2)}`
+                    }}
+                  />
+                  <YAxis className="text-xs" />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--background))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '6px',
+                    }}
+                    labelFormatter={(value) => `Month: ${value}`}
+                    formatter={(value) => [`${(value as number).toFixed(2)} hrs`, 'Total OPS']}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="totalHours"
+                    stroke="#10b981"
+                    strokeWidth={2}
+                    dot={{ fill: '#10b981' }}
+                    name="Total OPS"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          )
+        })()}
+
+        {/* Year / Range: stacked area chart per category */}
+        {(periodType === 'year' || periodType === 'range') && trends.length > 1 && (() => {
+          const OPS_CATEGORIES = ['OPS_Hiring', 'OPS_Jobs', 'OPS_Reviews', 'OPS_Guiding'] as const
+          const activeCategories = OPS_CATEGORIES.filter(cat =>
+            trends.some(t => Number(t[cat]) > 0)
+          )
+          if (activeCategories.length === 0) return null
+          return (
+            <div className="mt-8 pt-8 border-t">
+              <h3 className="text-sm font-medium mb-4">OPS Effort Trend by Activity</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart data={trends} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis
+                    dataKey="month"
+                    className="text-xs"
+                    tickFormatter={(value) => {
+                      const [year, month] = String(value).split('-')
+                      return `${month}/${year.slice(2)}`
+                    }}
+                  />
+                  <YAxis className="text-xs" />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--background))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '6px',
+                    }}
+                    labelFormatter={(value) => `Month: ${value}`}
+                  />
+                  <Legend />
+                  {activeCategories.map(cat => (
+                    <Area
+                      key={cat}
+                      type="monotone"
+                      dataKey={cat}
+                      stackId="1"
+                      stroke={ACTIVITY_COLORS[cat]}
+                      fill={ACTIVITY_COLORS[cat]}
+                      fillOpacity={0.6}
+                      name={cat.replace('OPS_', 'OPS ')}
+                    />
+                  ))}
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          )
+        })()}
+
         {/* Chart: Show all activities with hours */}
         {data.length > 0 &&
           (() => {
@@ -254,6 +360,7 @@ export function ActivitiesSection({ dateFrom, dateTo }: ActivitiesSectionProps) 
 
                 return {
                   name: getCategoryLabel(activity.category),
+                  category: activity.category,
                   hours: activity.totalHours,
                 };
               });
@@ -325,11 +432,18 @@ export function ActivitiesSection({ dateFrom, dateTo }: ActivitiesSectionProps) 
                     />
                     <Bar
                       dataKey="hours"
-                      fill="#78D3E6"
                       radius={[0, 4, 4, 0]}
                       label={<CustomLabel />}
                       barSize={30}
-                    />
+                    >
+                      {chartData.map((entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={ACTIVITY_COLORS[entry.category as keyof typeof ACTIVITY_COLORS] || '#94a3b8'}
+                          fillOpacity={0.6}
+                        />
+                      ))}
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               </div>

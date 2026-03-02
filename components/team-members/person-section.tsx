@@ -3,7 +3,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, CartesianGrid } from 'recharts'
+import { BarChart, Bar, Cell, XAxis, YAxis, ResponsiveContainer, CartesianGrid } from 'recharts'
+import { PROJECT_COLORS, ACTIVITY_COLORS } from '@/config/colors'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useExpandCollapse } from './team-members-view'
@@ -167,11 +168,18 @@ export function PersonSection({ member }: PersonSectionProps) {
                   />
                   <Bar
                     dataKey="hours"
-                    fill="#7BD4B4"
                     radius={[0, 4, 4, 0]}
                     label={<CustomLabel />}
                     barSize={30}
-                  />
+                  >
+                    {member.projects.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={PROJECT_COLORS[entry.project as keyof typeof PROJECT_COLORS] || '#94a3b8'}
+                        fillOpacity={0.6}
+                      />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -232,11 +240,18 @@ export function PersonSection({ member }: PersonSectionProps) {
                     />
                     <Bar
                       dataKey="hours"
-                      fill="#78D3E6"
                       radius={[0, 4, 4, 0]}
                       label={<CustomLabel />}
                       barSize={30}
-                    />
+                    >
+                      {member.opsActivities!.map((entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={ACTIVITY_COLORS[entry.activity as keyof typeof ACTIVITY_COLORS] || '#94a3b8'}
+                          fillOpacity={0.6}
+                        />
+                      ))}
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               </div>

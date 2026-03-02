@@ -22,11 +22,20 @@ import { Users } from "lucide-react";
 import {
   BarChart,
   Bar,
+  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
   ResponsiveContainer,
+  AreaChart,
+  Area,
+  LineChart,
+  Line,
+  Tooltip,
+  Legend,
 } from "recharts";
+import { PeriodType } from "@/components/overview/period-selector";
+import { PERSON_COLORS } from "@/config/colors";
 
 interface TeamMember {
   person_name: string;
@@ -39,6 +48,7 @@ interface TeamMember {
 
 interface TeamResponse {
   team: TeamMember[];
+  trends: Array<Record<string, number | string>>;
   totalHours: number;
   totalFTE: number;
   totalPlannedFTE: number;
@@ -47,10 +57,12 @@ interface TeamResponse {
 interface PersonnelSectionProps {
   dateFrom: string;
   dateTo: string;
+  periodType: PeriodType;
 }
 
-export function PersonnelSection({ dateFrom, dateTo }: PersonnelSectionProps) {
+export function PersonnelSection({ dateFrom, dateTo, periodType }: PersonnelSectionProps) {
   const [data, setData] = useState<TeamMember[]>([]);
+  const [trends, setTrends] = useState<Array<Record<string, number | string>>>([]);
   const [totalFTE, setTotalFTE] = useState<number>(0);
   const [totalPlannedFTE, setTotalPlannedFTE] = useState<number>(0);
   const [loading, setLoading] = useState(true);
@@ -71,6 +83,7 @@ export function PersonnelSection({ dateFrom, dateTo }: PersonnelSectionProps) {
         }
 
         const result: TeamResponse = await response.json();
+        setTrends(result.trends || []);
         setData(result.team || []);
         setTotalFTE(result.totalFTE || 0);
         setTotalPlannedFTE(result.totalPlannedFTE || 0);
@@ -203,6 +216,99 @@ export function PersonnelSection({ dateFrom, dateTo }: PersonnelSectionProps) {
           </div>
         )}
 
+        {/* Quarter: multi-line chart, one line per active person */}
+        {periodType === 'quarter' && trends.length > 1 && (() => {
+          const activePeople = data
+            .filter(m => m.actualFTE >= 0.1)
+            .map(m => m.person_name)
+          if (activePeople.length === 0) return null
+          return (
+            <div className="mt-8 pt-8 border-t">
+              <h3 className="text-sm font-medium mb-4">Individual FTE Trend</h3>
+              <ResponsiveContainer width="100%" height={250}>
+                <LineChart data={trends} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis
+                    dataKey="month"
+                    className="text-xs"
+                    tickFormatter={(value) => {
+                      const [year, month] = String(value).split('-')
+                      return `${month}/${year.slice(2)}`
+                    }}
+                  />
+                  <YAxis className="text-xs" />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--background))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '6px',
+                    }}
+                    labelFormatter={(value) => `Month: ${value}`}
+                  />
+                  <Legend />
+                  {activePeople.map((person, i) => (
+                    <Line
+                      key={person}
+                      type="monotone"
+                      dataKey={person}
+                      stroke={PERSON_COLORS[i % PERSON_COLORS.length]}
+                      strokeWidth={2}
+                      dot={{ fill: PERSON_COLORS[i % PERSON_COLORS.length] }}
+                    />
+                  ))}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          )
+        })()}
+
+        {/* Year / Range: stacked area chart per person */}
+        {(periodType === 'year' || periodType === 'range') && trends.length > 1 && (() => {
+          const activePeople = data
+            .filter(m => m.actualFTE >= 0.1)
+            .map(m => m.person_name)
+          if (activePeople.length === 0) return null
+          return (
+            <div className="mt-8 pt-8 border-t">
+              <h3 className="text-sm font-medium mb-4">Team FTE Trend by Person</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart data={trends} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis
+                    dataKey="month"
+                    className="text-xs"
+                    tickFormatter={(value) => {
+                      const [year, month] = String(value).split('-')
+                      return `${month}/${year.slice(2)}`
+                    }}
+                  />
+                  <YAxis className="text-xs" />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--background))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '6px',
+                    }}
+                    labelFormatter={(value) => `Month: ${value}`}
+                  />
+                  <Legend />
+                  {activePeople.map((person, i) => (
+                    <Area
+                      key={person}
+                      type="monotone"
+                      dataKey={person}
+                      stackId="1"
+                      stroke={PERSON_COLORS[i % PERSON_COLORS.length]}
+                      fill={PERSON_COLORS[i % PERSON_COLORS.length]}
+                      fillOpacity={0.6}
+                    />
+                  ))}
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          )
+        })()}
+
         {/* Chart: Only show main contributors (Actual FTE >= 0.25) */}
         {data.length > 0 &&
           (() => {
@@ -284,34 +390,48 @@ export function PersonnelSection({ dateFrom, dateTo }: PersonnelSectionProps) {
                     />
                     <Bar
                       dataKey="actualFTE"
-                      fill="#F9C57C"
                       radius={[0, 4, 4, 0]}
                       label={<CustomLabel />}
                       barSize={30}
-                    />
+                    >
+                      {chartData.map((entry) => {
+                        const i = data.findIndex(m => m.person_name === entry.name)
+                        return (
+                          <Cell
+                            key={entry.name}
+                            fill={PERSON_COLORS[i % PERSON_COLORS.length]}
+                            fillOpacity={0.6}
+                          />
+                        )
+                      })}
+                    </Bar>
                     <Bar
                       dataKey="plannedFTE"
-                      fill="#B99EFB"
                       radius={[0, 4, 4, 0]}
                       label={<CustomLabel />}
                       barSize={30}
-                    />
+                    >
+                      {chartData.map((entry) => {
+                        const i = data.findIndex(m => m.person_name === entry.name)
+                        return (
+                          <Cell
+                            key={entry.name}
+                            fill={PERSON_COLORS[i % PERSON_COLORS.length]}
+                            fillOpacity={0.4}
+                          />
+                        )
+                      })}
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
                 <div className="mt-4 flex items-center justify-center gap-6 text-xs text-muted-foreground">
                   <div className="flex items-center gap-2">
-                    <div
-                      className="w-3 h-3 rounded"
-                      style={{ backgroundColor: "#F9C57C" }}
-                    ></div>
-                    <span>Actual FTE</span>
+                    <div className="w-3 h-3 rounded bg-foreground opacity-80" />
+                    <span>Actual FTE (solid)</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div
-                      className="w-3 h-3 rounded"
-                      style={{ backgroundColor: "#B99EFB" }}
-                    ></div>
-                    <span>Planned FTE</span>
+                    <div className="w-3 h-3 rounded bg-foreground opacity-30" />
+                    <span>Planned FTE (faded)</span>
                   </div>
                 </div>
               </div>

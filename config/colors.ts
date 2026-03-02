@@ -24,3 +24,16 @@ export const ACTIVITY_COLORS = {
   OPS_Guiding: '#8b5cf6',   // purple
   Unpaired: '#ef4444',      // red
 }
+
+export const PERSON_COLORS = [
+  '#3b82f6', // blue
+  '#10b981', // green
+  '#f59e0b', // orange
+  '#8b5cf6', // purple
+  '#ec4899', // pink
+  '#06b6d4', // cyan
+  '#ef4444', // red
+  '#84cc16', // lime
+  '#f97316', // amber
+  '#a855f7', // violet
+]
