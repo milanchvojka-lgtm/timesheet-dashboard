@@ -136,6 +136,11 @@ export async function GET(request: NextRequest) {
         })
         .sort((a, b) => String(a.month).localeCompare(String(b.month)))
 
+      // Normalize: fill missing categories with 0 so stacked charts render correctly
+      const allProjectCats = new Set<string>()
+      projectTrends.forEach(t => Object.keys(t).filter(k => k !== 'month').forEach(k => allProjectCats.add(k)))
+      projectTrends.forEach(t => { allProjectCats.forEach(cat => { if (t[cat] === undefined) t[cat] = 0 }) })
+
       // OPS Activities (if any)
       const opsEntries = personEntries.filter(e => {
         const cat = mapProjectCategory(e.project_name)
@@ -188,6 +193,11 @@ export async function GET(request: NextRequest) {
             return result
           })
           .sort((a, b) => String(a.month).localeCompare(String(b.month)))
+
+        // Normalize: fill missing categories with 0 so stacked charts render correctly
+        const allActivityCats = new Set<string>()
+        activityTrends.forEach(t => Object.keys(t).filter(k => k !== 'month').forEach(k => allActivityCats.add(k)))
+        activityTrends.forEach(t => { allActivityCats.forEach(cat => { if (t[cat] === undefined) t[cat] = 0 }) })
       }
 
       return {
