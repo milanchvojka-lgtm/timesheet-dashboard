@@ -46,11 +46,13 @@ interface TeamMember {
     hours: number
     percentage: number
   }>
+  projectTrends: Array<Record<string, number | string>>
   opsActivities: Array<{
     activity: string
     hours: number
     percentage: number
   }> | null
+  activityTrends: Array<Record<string, number | string>>
 }
 
 interface TeamMembersData {
@@ -247,6 +249,7 @@ export function TeamMembersView({ dataRange }: { dataRange: DataRange }) {
               <PersonSection
                 key={member.person}
                 member={member}
+                periodType={period.type}
               />
             ))}
           </div>

@@ -118,6 +118,24 @@ export async function GET(request: NextRequest) {
         }))
         .sort((a, b) => b.hours - a.hours)
 
+      // Monthly project trends
+      const monthProjectMap = new Map<string, Map<string, number>>()
+      personEntries.forEach(entry => {
+        const month = entry.date.substring(0, 7)
+        const category = mapProjectCategory(entry.project_name)
+        if (!monthProjectMap.has(month)) monthProjectMap.set(month, new Map())
+        const m = monthProjectMap.get(month)!
+        m.set(category, (m.get(category) || 0) + Number(entry.hours))
+      })
+
+      const projectTrends = Array.from(monthProjectMap.entries())
+        .map(([month, catMap]) => {
+          const result: Record<string, number | string> = { month }
+          catMap.forEach((hours, cat) => { result[cat] = Number(hours.toFixed(2)) })
+          return result
+        })
+        .sort((a, b) => String(a.month).localeCompare(String(b.month)))
+
       // OPS Activities (if any)
       const opsEntries = personEntries.filter(e => {
         const cat = mapProjectCategory(e.project_name)
@@ -125,6 +143,7 @@ export async function GET(request: NextRequest) {
       })
 
       let opsActivities = null
+      let activityTrends: Array<Record<string, number | string>> = []
 
       if (opsEntries.length > 0) {
         const categorized = categorizeTimesheet(opsEntries, keywords || [], false)
@@ -151,6 +170,24 @@ export async function GET(request: NextRequest) {
         if (opsActivities.length === 0) {
           opsActivities = null
         }
+
+        // Monthly activity trends
+        const monthActivityMap = new Map<string, Map<string, number>>()
+        categorized.forEach(entry => {
+          if (entry.category === 'Other') return
+          const month = entry.date.substring(0, 7)
+          if (!monthActivityMap.has(month)) monthActivityMap.set(month, new Map())
+          const m = monthActivityMap.get(month)!
+          m.set(entry.category, (m.get(entry.category) || 0) + Number(entry.hours))
+        })
+
+        activityTrends = Array.from(monthActivityMap.entries())
+          .map(([month, catMap]) => {
+            const result: Record<string, number | string> = { month }
+            catMap.forEach((hours, cat) => { result[cat] = Number(hours.toFixed(2)) })
+            return result
+          })
+          .sort((a, b) => String(a.month).localeCompare(String(b.month)))
       }
 
       return {
@@ -160,7 +197,9 @@ export async function GET(request: NextRequest) {
         plannedFTE,
         deviation,
         projects,
-        opsActivities
+        projectTrends,
+        opsActivities,
+        activityTrends,
       }
     })
 

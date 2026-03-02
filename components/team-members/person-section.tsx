@@ -3,8 +3,16 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { BarChart, Bar, Cell, XAxis, YAxis, ResponsiveContainer, CartesianGrid } from 'recharts'
+import {
+  BarChart, Bar, Cell,
+  AreaChart, Area,
+  LineChart, Line,
+  XAxis, YAxis, CartesianGrid,
+  Tooltip, Legend,
+  ResponsiveContainer,
+} from 'recharts'
 import { PROJECT_COLORS, ACTIVITY_COLORS } from '@/config/colors'
+import { PeriodType } from '@/components/overview/period-selector'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useExpandCollapse } from './team-members-view'
@@ -20,18 +28,35 @@ interface TeamMember {
     hours: number
     percentage: number
   }>
+  projectTrends: Array<Record<string, number | string>>
   opsActivities: Array<{
     activity: string
     hours: number
     percentage: number
   }> | null
+  activityTrends: Array<Record<string, number | string>>
 }
 
 interface PersonSectionProps {
   member: TeamMember
+  periodType: PeriodType
 }
 
-export function PersonSection({ member }: PersonSectionProps) {
+const PROJECT_CATEGORIES = ['OPS', 'Internal', 'R&D', 'Guiding', 'PR', 'UX Maturity'] as const
+const ACTIVITY_CATEGORIES = ['OPS_Hiring', 'OPS_Jobs', 'OPS_Reviews', 'OPS_Guiding', 'Unpaired'] as const
+
+const TOOLTIP_STYLE = {
+  backgroundColor: 'hsl(var(--background))',
+  border: '1px solid hsl(var(--border))',
+  borderRadius: '6px',
+}
+
+const tickFormatter = (value: string) => {
+  const [year, month] = value.split('-')
+  return `${month}/${year.slice(2)}`
+}
+
+export function PersonSection({ member, periodType }: PersonSectionProps) {
   const { expandedSections, toggleSection } = useExpandCollapse()
   const isExpanded = expandedSections.has(member.person)
 
@@ -137,6 +162,70 @@ export function PersonSection({ member }: PersonSectionProps) {
               </TableBody>
             </Table>
 
+            {/* Project trend — quarter: multi-line, year/range: stacked area */}
+            {periodType === 'quarter' && member.projectTrends.length > 1 && (() => {
+              const activeCategories = PROJECT_CATEGORIES.filter(cat =>
+                member.projectTrends.some(t => Number(t[cat]) > 0)
+              )
+              if (activeCategories.length === 0) return null
+              return (
+                <div className="mt-6">
+                  <h4 className="text-sm font-medium mb-3 text-muted-foreground">Project Hours Trend</h4>
+                  <ResponsiveContainer width="100%" height={200}>
+                    <LineChart data={member.projectTrends} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                      <XAxis dataKey="month" className="text-xs" tickFormatter={tickFormatter} />
+                      <YAxis className="text-xs" />
+                      <Tooltip contentStyle={TOOLTIP_STYLE} labelFormatter={(v) => `Month: ${v}`} />
+                      <Legend />
+                      {activeCategories.map(cat => (
+                        <Line
+                          key={cat}
+                          type="monotone"
+                          dataKey={cat}
+                          stroke={PROJECT_COLORS[cat as keyof typeof PROJECT_COLORS] || '#94a3b8'}
+                          strokeWidth={2}
+                          dot={{ fill: PROJECT_COLORS[cat as keyof typeof PROJECT_COLORS] || '#94a3b8' }}
+                        />
+                      ))}
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              )
+            })()}
+
+            {(periodType === 'year' || periodType === 'range') && member.projectTrends.length > 1 && (() => {
+              const activeCategories = PROJECT_CATEGORIES.filter(cat =>
+                member.projectTrends.some(t => Number(t[cat]) > 0)
+              )
+              if (activeCategories.length === 0) return null
+              return (
+                <div className="mt-6">
+                  <h4 className="text-sm font-medium mb-3 text-muted-foreground">Project Hours Trend</h4>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <AreaChart data={member.projectTrends} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                      <XAxis dataKey="month" className="text-xs" tickFormatter={tickFormatter} />
+                      <YAxis className="text-xs" />
+                      <Tooltip contentStyle={TOOLTIP_STYLE} labelFormatter={(v) => `Month: ${v}`} />
+                      <Legend />
+                      {activeCategories.map(cat => (
+                        <Area
+                          key={cat}
+                          type="monotone"
+                          dataKey={cat}
+                          stackId="1"
+                          stroke={PROJECT_COLORS[cat as keyof typeof PROJECT_COLORS] || '#94a3b8'}
+                          fill={PROJECT_COLORS[cat as keyof typeof PROJECT_COLORS] || '#94a3b8'}
+                          fillOpacity={0.6}
+                        />
+                      ))}
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              )
+            })()}
+
             <div className="mt-6">
               <ResponsiveContainer width="100%" height={Math.max(member.projects.length * 60, 200)}>
                 <BarChart
@@ -208,6 +297,72 @@ export function PersonSection({ member }: PersonSectionProps) {
                   ))}
                 </TableBody>
               </Table>
+
+              {/* Activity trend — quarter: multi-line, year/range: stacked area */}
+              {periodType === 'quarter' && member.activityTrends.length > 1 && (() => {
+                const activeCategories = ACTIVITY_CATEGORIES.filter(cat =>
+                  member.activityTrends.some(t => Number(t[cat]) > 0)
+                )
+                if (activeCategories.length === 0) return null
+                return (
+                  <div className="mt-6">
+                    <h4 className="text-sm font-medium mb-3 text-muted-foreground">OPS Activity Hours Trend</h4>
+                    <ResponsiveContainer width="100%" height={200}>
+                      <LineChart data={member.activityTrends} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                        <XAxis dataKey="month" className="text-xs" tickFormatter={tickFormatter} />
+                        <YAxis className="text-xs" />
+                        <Tooltip contentStyle={TOOLTIP_STYLE} labelFormatter={(v) => `Month: ${v}`} />
+                        <Legend />
+                        {activeCategories.map(cat => (
+                          <Line
+                            key={cat}
+                            type="monotone"
+                            dataKey={cat}
+                            stroke={ACTIVITY_COLORS[cat as keyof typeof ACTIVITY_COLORS] || '#94a3b8'}
+                            strokeWidth={2}
+                            dot={{ fill: ACTIVITY_COLORS[cat as keyof typeof ACTIVITY_COLORS] || '#94a3b8' }}
+                            name={cat.replace('OPS_', 'OPS ')}
+                          />
+                        ))}
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                )
+              })()}
+
+              {(periodType === 'year' || periodType === 'range') && member.activityTrends.length > 1 && (() => {
+                const activeCategories = ACTIVITY_CATEGORIES.filter(cat =>
+                  member.activityTrends.some(t => Number(t[cat]) > 0)
+                )
+                if (activeCategories.length === 0) return null
+                return (
+                  <div className="mt-6">
+                    <h4 className="text-sm font-medium mb-3 text-muted-foreground">OPS Activity Hours Trend</h4>
+                    <ResponsiveContainer width="100%" height={250}>
+                      <AreaChart data={member.activityTrends} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                        <XAxis dataKey="month" className="text-xs" tickFormatter={tickFormatter} />
+                        <YAxis className="text-xs" />
+                        <Tooltip contentStyle={TOOLTIP_STYLE} labelFormatter={(v) => `Month: ${v}`} />
+                        <Legend />
+                        {activeCategories.map(cat => (
+                          <Area
+                            key={cat}
+                            type="monotone"
+                            dataKey={cat}
+                            stackId="1"
+                            stroke={ACTIVITY_COLORS[cat as keyof typeof ACTIVITY_COLORS] || '#94a3b8'}
+                            fill={ACTIVITY_COLORS[cat as keyof typeof ACTIVITY_COLORS] || '#94a3b8'}
+                            fillOpacity={0.6}
+                            name={cat.replace('OPS_', 'OPS ')}
+                          />
+                        ))}
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                )
+              })()}
 
               <div className="mt-6">
                 <ResponsiveContainer width="100%" height={Math.max(member.opsActivities.length * 60, 200)}>
