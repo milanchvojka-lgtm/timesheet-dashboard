@@ -70,23 +70,38 @@ export async function importTimesheetData(
     }
   }
 
-  // Transform parsed rows to database format
-  const entries: Omit<TimesheetEntry, 'id' | 'created_at' | 'updated_at'>[] = data.map((row) => ({
-    person_id: row.person_id,
-    person_name: row.person_name,
-    person_email: row.person_email || null,
-    project_id: row.project_id,
-    project_name: row.project_name,
-    project_category: mapProjectCategory(row.project_name),
-    activity_id: row.activity_id,
-    activity_name: row.activity_name,
-    date: row.date,
-    hours: row.hours,
-    description: row.description || null,
-    approved: row.approved || false,
-    billable: row.billable || false,
-    upload_id: uploadId,
-  }))
+  // Transform parsed rows to database format, skipping unrecognized projects
+  const skippedRows: string[] = []
+  const entries: Omit<TimesheetEntry, 'id' | 'created_at' | 'updated_at'>[] = data
+    .filter((row) => {
+      const category = mapProjectCategory(row.project_name)
+      if (category === 'Other') {
+        skippedRows.push(row.project_name)
+        return false
+      }
+      return true
+    })
+    .map((row) => ({
+      person_id: row.person_id,
+      person_name: row.person_name,
+      person_email: row.person_email || null,
+      project_id: row.project_id,
+      project_name: row.project_name,
+      project_category: mapProjectCategory(row.project_name),
+      activity_id: row.activity_id,
+      activity_name: row.activity_name,
+      date: row.date,
+      hours: row.hours,
+      description: row.description || null,
+      approved: row.approved || false,
+      billable: row.billable || false,
+      upload_id: uploadId,
+    }))
+
+  if (skippedRows.length > 0) {
+    const uniqueSkipped = [...new Set(skippedRows)]
+    console.log(`[Importer] Skipped ${skippedRows.length} entries from unrecognized projects: ${uniqueSkipped.join(', ')}`)
+  }
 
   // Insert entries in batches
   const BATCH_SIZE = 1000
@@ -142,7 +157,7 @@ export async function importTimesheetData(
     total_rows: data.length,
     successful_rows: successfulRows,
     failed_rows: failedRows,
-    skipped_rows: 0,
+    skipped_rows: skippedRows.length,
     validation_errors: validationErrors,
     data_date_from: dataDateFrom,
     data_date_to: dataDateTo,
