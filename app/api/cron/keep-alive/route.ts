@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createServerAdminClient } from '@/lib/supabase/server'
+import { Client } from 'pg'
 
 export async function GET(request: Request) {
   // Only enforce auth if CRON_SECRET is configured
@@ -10,14 +10,32 @@ export async function GET(request: Request) {
     }
   }
 
-  const supabase = createServerAdminClient()
-  const { count, error } = await supabase
-    .from('users')
-    .select('*', { count: 'exact', head: true })
-
-  if (error) {
-    return NextResponse.json({ ok: false, error: error.message }, { status: 500 })
+  // Use a direct PostgreSQL connection instead of the Supabase REST API.
+  // Supabase does not count REST API calls as "activity" for its
+  // free-tier inactivity check — only real database connections count.
+  const connectionString = process.env.SUPABASE_DB_URL
+  if (!connectionString) {
+    return NextResponse.json(
+      { ok: false, error: 'SUPABASE_DB_URL not configured' },
+      { status: 500 }
+    )
   }
 
-  return NextResponse.json({ ok: true, timestamp: new Date().toISOString(), userCount: count })
+  const client = new Client({ connectionString })
+
+  try {
+    await client.connect()
+    const result = await client.query('SELECT NOW() AS time')
+    await client.end()
+
+    return NextResponse.json({
+      ok: true,
+      timestamp: result.rows[0].time,
+    })
+  } catch (error) {
+    return NextResponse.json(
+      { ok: false, error: error instanceof Error ? error.message : 'Unknown error' },
+      { status: 500 }
+    )
+  }
 }
