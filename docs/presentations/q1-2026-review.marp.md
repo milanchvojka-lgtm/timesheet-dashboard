@@ -196,40 +196,39 @@ Vyrostli jsme díky <strong>Tajovi</strong> a <strong>Jardovi</strong>.
 
 ---
 
-<div class="label">OPS YoY</div>
+<div class="label">Kam šel růst</div>
 
-# OPS **rychle roste**.
+# Z nového přírůstku šly do R&D **2 %**.
 
-<div class="big ops">×2.2</div>
+<div class="big ops">2 %</div>
 
 <div class="note">
-Z 0.58 na <strong>1.29 FTE</strong>. Víc designerů + víc jobs = víc OPS, logicky.<br>
-A charakter se profesionalizoval — místo drobných úkolů jedeme <strong>velké klientské zakázky</strong> (Eurowag, ČSOB, MM, Pronatal).
+Tým narostl o 1.4 FTE meziročně. 50 % spolkly operations, 48 % šlo do ostatních projektů. Na R&D zbylo <strong>+0.03 FTE</strong> — prakticky nic.
 </div>
 
 ---
 
-<div class="label">R&D dnes</div>
+<div class="label">Stav R&D</div>
 
-# Na R&D nám zbývá **málo**.
+# Výsledek: R&D drží jen **16 %** kapacity.
 
 <div class="big rnd">16 %</div>
 
 <div class="note">
-Z historického 90 : 10 jsme se posunuli na 72 : 28. <strong>Posun správným směrem.</strong><br>
-Ale cíl je <strong>minimálně 25 %, ideálně 35 %</strong>. Tam jsme stále daleko.
+Z historického 90 : 10 jsme se posunuli na 72 : 28 — pokrok.<br>
+Ale cíl je <strong>minimum 25 %, ideál 35 %</strong>. Tam jsme stále daleko.
 </div>
 
 ---
 
-<div class="label">Tempo k cíli</div>
+<div class="label">Důsledek</div>
 
-# Tempo je **příliš pomalé**.
+# Bez investice do R&D **nezvládneme inovovat**.
 
 <div class="big rnd">~10 let</div>
 
 <div class="note">
-Při současných deltách R&D dorůstá, ale jen pomalu — z 16 % se asymptoticky blíží stropu kolem <strong>26 %</strong>. To znamená: cíl <strong>25 % až za ~10 let</strong> (39 kvartálů), cíl <strong>35 % bez aktivního zásahu nedosažitelný</strong>. Tempo nás vede k minimu, ale neudrží nás u ideálu.
+Současné tempo nás dovede k 25 % cíli za zhruba <strong>10 let</strong>, k 35 % nikdy. Bez prostoru pro R&D — a tedy pro nástroje a automatizace — bude každý nový OPS klient zhoršovat poměr. <strong>Operace porostou, kapacita pro inovace ne.</strong>
 </div>
 
 ---

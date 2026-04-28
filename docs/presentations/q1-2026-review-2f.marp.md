@@ -294,39 +294,38 @@ Z 1.7 na <strong>3.1 FTE</strong> meziročně. Vyrostli jsme díky <strong>Tajov
 
 ---
 
-<div class="eyebrow">02 / OPS YoY</div>
+<div class="eyebrow">02 / Kam šel růst</div>
 
-# OPS **rychle roste**.
+# Z nového přírůstku šly do R&D **2 %**.
 
-<span class="big hl">×2.2</span>
+<span class="big hl">2 %</span>
 
 <div class="note">
-Z 0.58 na <strong>1.29 FTE</strong>. Víc designerů + víc jobs = víc OPS, logicky. A charakter se profesionalizoval — místo drobných úkolů jedeme <strong>velké klientské zakázky</strong> (Eurowag, ČSOB, MM, Pronatal).
+Tým narostl o 1.4 FTE meziročně. 50 % spolkly operations, 48 % šlo do ostatních projektů. Na R&D zbylo <strong>+0.03 FTE</strong> — prakticky nic.
 </div>
 
 ---
 
-<div class="eyebrow">03 / R&D dnes</div>
+<div class="eyebrow">03 / Stav R&D</div>
 
-# Na R&D nám zbývá **málo**.
+# Výsledek: R&D drží jen **16 %** kapacity.
 
 <span class="big hl">16 %</span>
 
 <div class="note">
-Z historického 90 : 10 jsme se posunuli na <strong>72 : 28</strong>. Posun správným směrem.<br>
-Ale cíl je <strong>minimálně 25 %, ideálně 35 %</strong>. Tam jsme stále daleko.
+Z historického 90 : 10 jsme se posunuli na <strong>72 : 28</strong> — pokrok. Ale cíl je <strong>minimum 25 %, ideál 35 %</strong>. Tam jsme stále daleko.
 </div>
 
 ---
 
-<div class="eyebrow">04 / Tempo k cíli</div>
+<div class="eyebrow">04 / Důsledek</div>
 
-# Tempo je **příliš pomalé**.
+# Bez investice do R&D **nezvládneme inovovat**.
 
 <span class="big hl">~10 let</span>
 
 <div class="note">
-Při současných deltách R&D dorůstá, ale jen pomalu — z 16 % se asymptoticky blíží stropu kolem <strong>26 %</strong>. To znamená: cíl <strong>25 % až za ~10 let</strong> (39 kvartálů), cíl <strong>35 % bez aktivního zásahu nedosažitelný</strong>. Tempo nás vede k minimu, ale neudrží nás u ideálu.
+Současné tempo nás dovede k 25 % cíli za zhruba <strong>10 let</strong>, k 35 % nikdy. Bez prostoru pro R&D — a tedy pro nástroje a automatizace — bude každý nový OPS klient zhoršovat poměr. <strong>Operace porostou, kapacita pro inovace ne.</strong>
 </div>
 
 ---
