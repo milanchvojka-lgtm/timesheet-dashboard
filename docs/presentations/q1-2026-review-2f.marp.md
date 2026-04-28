@@ -279,6 +279,47 @@ style: |
     box-decoration-break: clone;
   }
   .note strong { color: var(--ink) !important; font-weight: 600; background: transparent; }
+
+  /* Three-lever options grid */
+  .levers {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0;
+    border: 2px solid var(--ink);
+    margin: 24px 0 16px;
+  }
+  .levers .lever {
+    padding: 24px 26px;
+    border-right: 2px solid var(--ink);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .levers .lever:last-child { border-right: none; }
+  .levers .lever.pink { background: var(--pink); }
+  .levers .lever .ttl {
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    font-size: 18px;
+    color: var(--ink);
+    line-height: 1.2;
+  }
+  .levers .lever .desc {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.45;
+    color: var(--ink-soft);
+  }
+  .levers .lever.pink .desc { color: var(--ink); }
+  .levers .lever .pro,
+  .levers .lever .con {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--ink);
+  }
+  .levers .lever .con { color: var(--ink-soft); }
+  .levers .lever.pink .con { color: var(--ink); }
 ---
 
 <!-- _class: cover -->
@@ -365,12 +406,52 @@ R&D není nadstandard — je to investice nutná pro <strong>růst</strong>. Př
 
 ---
 
-<div class="eyebrow">05 / K rozhodnutí</div>
+<div class="eyebrow">05 / Q2 2026 výhled</div>
 
-# Tři otázky pro tým.
+# Q2 nás krátkodobě oslabí o **−0.5 FTE**.
 
-<ul class="questions">
-  <li>Cílíme R&amp;D na <strong>25 %</strong> minimum, nebo na <strong>35 %</strong> ideál?</li>
-  <li>Přesun části kapacity <strong>z OPS</strong>, nebo <strong>navýšit</strong> celkovou kapacitu?</li>
-  <li>Jak definujeme <strong>udržitelný režim růstu</strong> — kolik R&amp;D musí zbýt na každý nový job?</li>
-</ul>
+<span class="big hl">−0.5 FTE</span>
+
+<div class="note">
+<strong>Táňa</strong> 1.0 → 0.5 FTE (Itálie). <strong>Milan</strong> −0.4 FTE (jiný projekt). Jirka + Péťa zaskočí za Milana → net <strong>−0.5 FTE</strong>.<br>
+Jednorázové. Mitigace: zpomalit tempo nových HALOTON jobů a onboardingu designérů, dokud se Táňa nevrátí.
+</div>
+
+---
+
+<div class="eyebrow">06 / Co dál — tři páky</div>
+
+# Tři páky, kterými R&D vrátíme na cíl.
+
+<div class="levers">
+  <div class="lever">
+    <div class="ttl">01 / Doplnit tým</div>
+    <div class="desc">Drobné posílení kapacity (vedení nepreferuje rozšíření).</div>
+    <div class="pro">+ Rychlé. Funguje okamžitě.</div>
+    <div class="con">− Náklady. Časem znovu narazíme na strop.</div>
+  </div>
+  <div class="lever">
+    <div class="ttl">02 / Přerozdělit čas</div>
+    <div class="desc">Krátit PR, interní a svobodnářství ve prospěch R&amp;D.</div>
+    <div class="pro">+ Bez nákladů. V naší kontrole.</div>
+    <div class="con">− Jiné kategorie utrpí. PR a interní mají hodnotu.</div>
+  </div>
+  <div class="lever pink">
+    <div class="ttl">03 / Strop pro OPS</div>
+    <div class="desc">Hard floor 25 % R&amp;D. OPS musí vejít do zbytku.</div>
+    <div class="pro">+ Ošetřuje kořen — cyklus z předchozího slidu.</div>
+    <div class="con">− Brzdí příjem nových klientů. Vyžaduje dohodu s vedením.</div>
+  </div>
+</div>
+
+---
+
+<div class="eyebrow">07 / Doporučení</div>
+
+# Začneme **kombinací 2 + 3**.
+
+<div class="note">
+<strong>Q2 (krátkodobě):</strong> zpomalit nábor v HALOTONu, ustát výpadek bez růstu OPS.<br><br>
+<strong>Q3+ (střednědobě):</strong> zavést <strong>25 % R&D floor</strong> jako kvartální commit. Každé rozhodnutí o nové OPS práci se měří proti tomuto stropu.<br><br>
+<strong>Páka 1 (přidat lidi)</strong> zůstává v záloze — vyhodnotit po dvou kvartálech, jestli kombinace 2+3 stačí.
+</div>
