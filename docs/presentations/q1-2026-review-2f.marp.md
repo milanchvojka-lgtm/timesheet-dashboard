@@ -296,41 +296,29 @@ Z 1.7 na <strong>3.1 FTE</strong> meziročně. Vyrostli jsme díky <strong>Tajov
 
 <div class="eyebrow">02 / Kam šel růst</div>
 
-# Z nového přírůstku šly do R&D **2 %**.
+# Z růstu týmu šlo do R&D **prakticky nic**.
 
 <span class="big hl">2 %</span>
 
 <div class="note">
-Tým narostl o 1.4 FTE meziročně. 50 % spolkly operations, 48 % šlo do ostatních projektů. Na R&D zbylo <strong>+0.03 FTE</strong> — prakticky nic.
+50 % spolkly <strong>operations</strong>, 48 % ostatní projekty. Na R&D zbylo <strong>+0.03 FTE</strong>.
 </div>
 
 ---
 
 <div class="eyebrow">03 / Stav R&D</div>
 
-# Výsledek: R&D drží jen **16 %** kapacity.
+# Z 90 : 10 jsme se posunuli na **72 : 28**.
 
 <span class="big hl">16 %</span>
 
 <div class="note">
-Z historického 90 : 10 jsme se posunuli na <strong>72 : 28</strong> — pokrok. Ale cíl je <strong>minimum 25 %, ideál 35 %</strong>. Tam jsme stále daleko.
+Pokrok proti historii. Cíl je <strong>minimum 25 %, ideál 35 %</strong>.
 </div>
 
 ---
 
-<div class="eyebrow">04 / Důsledek</div>
-
-# Bez investice do R&D **nezvládneme inovovat**.
-
-<span class="big hl">~10 let</span>
-
-<div class="note">
-Současné tempo nás dovede k 25 % cíli za zhruba <strong>10 let</strong>, k 35 % nikdy. Bez prostoru pro R&D — a tedy pro nástroje a automatizace — bude každý nový OPS klient zhoršovat poměr. <strong>Operace porostou, kapacita pro inovace ne.</strong>
-</div>
-
----
-
-<div class="eyebrow">05 / Proč na tom záleží</div>
+<div class="eyebrow">04 / Proč na tom záleží</div>
 
 # Bez R&D nejsou **nástroje**.
 
@@ -362,9 +350,13 @@ Současné tempo nás dovede k 25 % cíli za zhruba <strong>10 let</strong>, k 3
   </div>
 </div>
 
+<div class="note">
+R&D není nadstandard — je to investice nutná pro <strong>růst</strong>. Při současném tempu bychom k 25 % cíli šli zhruba <strong>10 let</strong>, k 35 % nikdy.
+</div>
+
 ---
 
-<div class="eyebrow">06 / K rozhodnutí</div>
+<div class="eyebrow">05 / K rozhodnutí</div>
 
 # Tři otázky pro tým.
 

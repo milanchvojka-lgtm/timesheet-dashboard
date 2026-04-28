@@ -198,37 +198,24 @@ Vyrostli jsme díky <strong>Tajovi</strong> a <strong>Jardovi</strong>.
 
 <div class="label">Kam šel růst</div>
 
-# Z nového přírůstku šly do R&D **2 %**.
+# Z růstu týmu šlo do R&D *prakticky nic*.
 
 <div class="big ops">2 %</div>
 
 <div class="note">
-Tým narostl o 1.4 FTE meziročně. 50 % spolkly operations, 48 % šlo do ostatních projektů. Na R&D zbylo <strong>+0.03 FTE</strong> — prakticky nic.
+50 % spolkly <strong>operations</strong>, 48 % ostatní projekty. Na R&D zbylo <strong>+0.03 FTE</strong>.
 </div>
 
 ---
 
 <div class="label">Stav R&D</div>
 
-# Výsledek: R&D drží jen **16 %** kapacity.
+# Z 90 : 10 jsme se posunuli na *72 : 28*.
 
 <div class="big rnd">16 %</div>
 
 <div class="note">
-Z historického 90 : 10 jsme se posunuli na 72 : 28 — pokrok.<br>
-Ale cíl je <strong>minimum 25 %, ideál 35 %</strong>. Tam jsme stále daleko.
-</div>
-
----
-
-<div class="label">Důsledek</div>
-
-# Bez investice do R&D **nezvládneme inovovat**.
-
-<div class="big rnd">~10 let</div>
-
-<div class="note">
-Současné tempo nás dovede k 25 % cíli za zhruba <strong>10 let</strong>, k 35 % nikdy. Bez prostoru pro R&D — a tedy pro nástroje a automatizace — bude každý nový OPS klient zhoršovat poměr. <strong>Operace porostou, kapacita pro inovace ne.</strong>
+Pokrok proti historii. Cíl je <strong>minimum 25 %, ideál 35 %</strong>.
 </div>
 
 ---
@@ -252,7 +239,7 @@ Současné tempo nás dovede k 25 % cíli za zhruba <strong>10 let</strong>, k 3
 </div>
 
 <div class="note">
-R&D není nadstandard — je to investice nutná pro <strong>udržitelný režim při růstu</strong>.
+R&D není nadstandard — je to investice nutná pro <strong>udržitelný režim při růstu</strong>. Při současném tempu bychom k 25 % cíli šli zhruba <strong>10 let</strong>, k 35 % nikdy.
 </div>
 
 ---
