@@ -87,7 +87,14 @@ style: |
     margin: 0 0 24px;
     max-width: 22ch;
   }
-  h1 strong { font-weight: 500; background: var(--pink); padding: 0 0.15em; color: var(--ink) !important; }
+  h1 strong {
+    font-weight: 500;
+    background: linear-gradient(to bottom, transparent 0 14%, var(--pink) 14% 96%, transparent 96% 100%);
+    padding: 0 0.15em;
+    color: var(--ink) !important;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
   h1 em { font-style: italic; color: var(--pink) !important; font-weight: 500; background: transparent; }
   strong { color: inherit; }
 
@@ -264,10 +271,12 @@ style: |
     letter-spacing: 0.05em;
   }
   ul.questions li strong {
-    background: var(--pink);
+    background: linear-gradient(to bottom, transparent 0 14%, var(--pink) 14% 96%, transparent 96% 100%);
     padding: 0 0.15em;
     font-weight: 500;
     color: var(--ink) !important;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
   }
   .note strong { color: var(--ink) !important; font-weight: 600; background: transparent; }
 ---
