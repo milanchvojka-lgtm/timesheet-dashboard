@@ -283,7 +283,7 @@ style: |
   /* Three-lever options grid */
   .levers {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
     gap: 0;
     border: 2px solid var(--ink);
     margin: 24px 0 16px;
@@ -418,9 +418,9 @@ R&D není nadstandard — je to investice nutná pro <strong>růst</strong>.<br>
 
 ---
 
-<div class="eyebrow">06 / Co dál — tři páky</div>
+<div class="eyebrow">06 / Co dál — čtyři páky</div>
 
-# Tři páky, kterými R&D můžeme posílit
+# Čtyři páky, kterými R&D můžeme posílit
 
 <div class="levers">
   <div class="lever">
@@ -433,15 +433,19 @@ R&D není nadstandard — je to investice nutná pro <strong>růst</strong>.<br>
   </div>
   <div class="lever">
     <div class="ttl">03 / Limit na OPS</div>
-    <div class="desc">25 % R&amp;D. OPS musí vejít do zbytku.</div>
+    <div class="desc">20 % R&amp;D. OPS musí vejít do zbytku.</div>
+  </div>
+  <div class="lever">
+    <div class="ttl">04 / AI automatizace</div>
+    <div class="desc">Zefektivnit čas v OPS pomocí AI nástrojů.</div>
   </div>
 </div>
 
 ---
 
-<div class="eyebrow">06 / Co dál — tři páky</div>
+<div class="eyebrow">07 / V Q2 použijeme dvě</div>
 
-# V Q2 použíjeme dvě páky
+# V Q2 použijeme tři páky
 
 <div class="levers">
   <div class="lever">
@@ -454,6 +458,10 @@ R&D není nadstandard — je to investice nutná pro <strong>růst</strong>.<br>
   </div>
   <div class="lever pink">
     <div class="ttl">03 / Limit na OPS</div>
-    <div class="desc">25 % R&amp;D. OPS musí vejít do zbytku.</div>
+    <div class="desc">20 % R&amp;D. OPS musí vejít do zbytku.</div>
+  </div>
+  <div class="lever pink">
+    <div class="ttl">04 / AI automatizace</div>
+    <div class="desc">Zefektivnit čas v OPS pomocí AI nástrojů.</div>
   </div>
 </div>
