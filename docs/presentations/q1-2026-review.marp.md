@@ -175,10 +175,9 @@ style: |
 
 <!-- _class: cover -->
 
-# OPS roste rychleji
-# než R&D.
+# Operations je **2.5× větší** než R&D.
 
-## Pokud to bude pokračovat, narazíme.
+## A propast se každý kvartál zvětšuje.
 
 <div class="footer-meta">Design tým · Q1 2026 review</div>
 
@@ -186,13 +185,13 @@ style: |
 
 <div class="label">Kapacita YoY</div>
 
-# Tým má dnes **víc kapacity**.
+# Tým má dnes **víc kapacity**, než měl před rokem.
 
 <div class="big">+1.4 FTE</div>
 
 <div class="note">
 Z 1.7 na <strong>3.1 FTE</strong> meziročně.<br>
-Headcount se ale prakticky nezměnil — růst táhne <strong>Taja</strong> (nastoupil v květnu) a <strong>Jarda</strong> (vyrampoval z 0.02 na 0.38).
+Vyrostli jsme díky <strong>Tajovi</strong> a <strong>Jardovi</strong>.
 </div>
 
 ---
