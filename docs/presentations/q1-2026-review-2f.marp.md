@@ -81,7 +81,7 @@ style: |
     font-family: 'IBM Plex Mono', monospace;
     font-weight: 500;
     font-size: 56px;
-    line-height: 1.05;
+    line-height: 1.25;
     letter-spacing: -0.025em;
     color: var(--ink);
     margin: 0 0 24px;
@@ -113,7 +113,7 @@ style: |
   section.cover { justify-content: center; }
   section.cover h1 {
     font-size: 84px;
-    line-height: 1;
+    line-height: 1.2;
     max-width: 18ch;
   }
   section.cover .eyebrow { margin-top: 0; }
