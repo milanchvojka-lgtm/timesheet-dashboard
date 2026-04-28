@@ -328,7 +328,7 @@ style: |
 
 # Operations je **2.5× větší** než R&D
 
-## A propast se každý kvartál zvětšuje
+## A rozdíl se každý kvartál trochu zvětšuje
 
 ---
 
