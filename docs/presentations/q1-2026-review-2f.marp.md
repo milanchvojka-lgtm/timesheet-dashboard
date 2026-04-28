@@ -326,15 +326,15 @@ style: |
 
 <div class="eyebrow">Q1 2026 / Design tým</div>
 
-# Operations je **2.5× větší** než R&D.
+# Operations je **2.5× větší** než R&D
 
-## A propast se každý kvartál zvětšuje.
+## A propast se každý kvartál zvětšuje
 
 ---
 
 <div class="eyebrow">01 / Kapacita YoY</div>
 
-# Tým má dnes **víc kapacity**, než měl před rokem.
+# Tým má dnes **víc kapacity**, než měl před rokem
 
 <span class="big hl">+1.4 FTE</span>
 
@@ -346,7 +346,7 @@ Z 1.7 na <strong>3.1 FTE</strong> meziročně. Vyrostli jsme díky <strong>Tajov
 
 <div class="eyebrow">02 / Kam šel růst</div>
 
-# Z růstu týmu šlo do R&D **prakticky nic**.
+# Z růstu týmu šlo do R&D **prakticky nic**
 
 <span class="big hl">2 %</span>
 
@@ -358,7 +358,7 @@ Z 1.7 na <strong>3.1 FTE</strong> meziročně. Vyrostli jsme díky <strong>Tajov
 
 <div class="eyebrow">03 / Stav R&D</div>
 
-# Z 90 : 10 jsme se posunuli na **72 : 28**.
+# Z 90 : 10 jsme se posunuli na **72 : 28**
 
 <span class="big hl">16 %</span>
 
@@ -370,7 +370,7 @@ Pokrok proti historii. Cíl je <strong>minimum 25 %, ideál 35 %</strong>.
 
 <div class="eyebrow">04 / Proč na tom záleží</div>
 
-# Bez R&D nejsou **nástroje**.
+# Bez R&D nebudeme **inovovat nástroje**
 
 <div class="cycle">
   <div class="step">
@@ -401,57 +401,59 @@ Pokrok proti historii. Cíl je <strong>minimum 25 %, ideál 35 %</strong>.
 </div>
 
 <div class="note">
-R&D není nadstandard — je to investice nutná pro <strong>růst</strong>. Při současném tempu bychom k 25 % cíli šli zhruba <strong>10 let</strong>, k 35 % nikdy.
+R&D není nadstandard — je to investice nutná pro <strong>růst</strong>.<br>Při současném tempu bychom k 25 % cíli šli zhruba <strong>10 let</strong>, k 35 % nikdy.
 </div>
 
 ---
 
 <div class="eyebrow">05 / Q2 2026 výhled</div>
 
-# Q2 nás krátkodobě oslabí o **−0.5 FTE**.
+# V Q2 nás čeká **oslabení**
 
 <span class="big hl">−0.5 FTE</span>
 
 <div class="note">
-<strong>Táňa</strong> 1.0 → 0.5 FTE (Itálie). <strong>Milan</strong> −0.4 FTE (jiný projekt). Jirka + Péťa zaskočí za Milana → net <strong>−0.5 FTE</strong>.<br>
-Jednorázové. Mitigace: zpomalit tempo nových HALOTON jobů a onboardingu designérů, dokud se Táňa nevrátí.
+<strong>Taja</strong> 1.0 → 0.5 FTE (Itálie).
 </div>
 
 ---
 
 <div class="eyebrow">06 / Co dál — tři páky</div>
 
-# Tři páky, kterými R&D vrátíme na cíl.
+# Tři páky, kterými R&D můžeme posílit
 
 <div class="levers">
   <div class="lever">
     <div class="ttl">01 / Doplnit tým</div>
-    <div class="desc">Drobné posílení kapacity (vedení nepreferuje rozšíření).</div>
-    <div class="pro">+ Rychlé. Funguje okamžitě.</div>
-    <div class="con">− Náklady. Časem znovu narazíme na strop.</div>
+    <div class="desc">Drobné/ dočasné posílení kapacity.</div>
   </div>
   <div class="lever">
     <div class="ttl">02 / Přerozdělit čas</div>
-    <div class="desc">Krátit PR, interní a svobodnářství ve prospěch R&amp;D.</div>
-    <div class="pro">+ Bez nákladů. V naší kontrole.</div>
-    <div class="con">− Jiné kategorie utrpí. PR a interní mají hodnotu.</div>
+    <div class="desc">Omezit PR a interní ve prospěch R&amp;D.</div>
   </div>
-  <div class="lever pink">
-    <div class="ttl">03 / Strop pro OPS</div>
-    <div class="desc">Hard floor 25 % R&amp;D. OPS musí vejít do zbytku.</div>
-    <div class="pro">+ Ošetřuje kořen — cyklus z předchozího slidu.</div>
-    <div class="con">− Brzdí příjem nových klientů. Vyžaduje dohodu s vedením.</div>
+  <div class="lever">
+    <div class="ttl">03 / Limit na OPS</div>
+    <div class="desc">25 % R&amp;D. OPS musí vejít do zbytku.</div>
   </div>
 </div>
 
 ---
 
-<div class="eyebrow">07 / Doporučení</div>
+<div class="eyebrow">06 / Co dál — tři páky</div>
 
-# Začneme **kombinací 2 + 3**.
+# V Q2 použíjeme dvě páky
 
-<div class="note">
-<strong>Q2 (krátkodobě):</strong> zpomalit nábor v HALOTONu, ustát výpadek bez růstu OPS.<br><br>
-<strong>Q3+ (střednědobě):</strong> zavést <strong>25 % R&D floor</strong> jako kvartální commit. Každé rozhodnutí o nové OPS práci se měří proti tomuto stropu.<br><br>
-<strong>Páka 1 (přidat lidi)</strong> zůstává v záloze — vyhodnotit po dvou kvartálech, jestli kombinace 2+3 stačí.
+<div class="levers">
+  <div class="lever">
+    <div class="ttl">01 / Doplnit tým</div>
+    <div class="desc">Drobné/ dočasné posílení kapacity.</div>
+  </div>
+  <div class="lever pink">
+    <div class="ttl">02 / Přerozdělit čas</div>
+    <div class="desc">Omezit PR a interní ve prospěch R&amp;D.</div>
+  </div>
+  <div class="lever pink">
+    <div class="ttl">03 / Limit na OPS</div>
+    <div class="desc">25 % R&amp;D. OPS musí vejít do zbytku.</div>
+  </div>
 </div>
