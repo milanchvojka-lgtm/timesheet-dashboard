@@ -91,6 +91,19 @@ export interface ValidationError {
 }
 
 /**
+ * Skipped Entry
+ * A row dropped during import because its project is not in the category mapping
+ */
+export interface SkippedEntry {
+  date: string
+  person_name: string
+  project_name: string
+  activity_name: string
+  hours: number
+  description: string | null
+}
+
+/**
  * Upload Result
  * Summary of upload and import operation
  */
@@ -101,6 +114,7 @@ export interface UploadResult {
   successful_rows: number
   failed_rows: number
   skipped_rows: number
+  skipped_entries: SkippedEntry[]
   validation_errors: ValidationError[]
   data_date_from: string | null
   data_date_to: string | null

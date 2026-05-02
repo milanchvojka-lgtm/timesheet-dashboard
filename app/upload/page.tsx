@@ -8,6 +8,15 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Separator } from "@/components/ui/separator"
 import { CheckCircle2, XCircle, Clock, FileText, Calendar, User } from "lucide-react"
 
+interface SkippedEntry {
+  date: string
+  person_name: string
+  project_name: string
+  activity_name: string
+  hours: number
+  description: string | null
+}
+
 interface UploadResult {
   success: boolean
   message: string
@@ -16,6 +25,8 @@ interface UploadResult {
     total_rows: number
     successful_rows: number
     failed_rows: number
+    skipped_rows: number
+    skipped_entries: SkippedEntry[]
     data_date_from: string | null
     data_date_to: string | null
   }
@@ -164,6 +175,9 @@ export default function UploadPage() {
                     Date range: {formatDateRange(uploadResult.result.data_date_from, uploadResult.result.data_date_to)}
                   </p>
                 )}
+                {uploadResult.result.skipped_rows > 0 && (
+                  <SkippedEntriesDisclosure entries={uploadResult.result.skipped_entries} />
+                )}
               </div>
             )}
           </AlertDescription>
@@ -246,5 +260,70 @@ export default function UploadPage() {
         )}
       </div>
     </div>
+  )
+}
+
+function SkippedEntriesDisclosure({ entries }: { entries: SkippedEntry[] }) {
+  const groups = entries.reduce<Record<string, SkippedEntry[]>>((acc, e) => {
+    const key = e.project_name || "(empty)"
+    if (!acc[key]) acc[key] = []
+    acc[key].push(e)
+    return acc
+  }, {})
+
+  const sortedGroups = Object.entries(groups).sort((a, b) => b[1].length - a[1].length)
+  const totalHours = entries.reduce((sum, e) => sum + (e.hours || 0), 0)
+
+  const formatDate = (d: string) => {
+    const date = new Date(d)
+    return isNaN(date.getTime()) ? d : date.toLocaleDateString()
+  }
+
+  return (
+    <details className="mt-3 rounded border border-yellow-300 bg-yellow-50 p-3 text-yellow-900">
+      <summary className="cursor-pointer font-medium">
+        Skipped: {entries.length} entries ({totalHours.toFixed(1)}h) — unrecognized projects
+      </summary>
+      <p className="mt-2 text-xs italic">
+        These rows were not imported because their project is not mapped to any category.
+        To include them, add the project to <code>config/projects.ts</code> and re-upload.
+      </p>
+      <div className="mt-3 space-y-4">
+        {sortedGroups.map(([project, rows]) => {
+          const projectHours = rows.reduce((sum, e) => sum + (e.hours || 0), 0)
+          return (
+            <div key={project}>
+              <div className="mb-1 text-sm font-semibold">
+                {project} <span className="font-normal text-yellow-700">— {rows.length} entries, {projectHours.toFixed(1)}h</span>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="border-b border-yellow-300 text-left">
+                      <th className="py-1 pr-3 font-medium">Date</th>
+                      <th className="py-1 pr-3 font-medium">Person</th>
+                      <th className="py-1 pr-3 font-medium">Activity</th>
+                      <th className="py-1 pr-3 font-medium text-right">Hours</th>
+                      <th className="py-1 pr-3 font-medium">Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map((r, i) => (
+                      <tr key={i} className="border-b border-yellow-200/60">
+                        <td className="py-1 pr-3 whitespace-nowrap">{formatDate(r.date)}</td>
+                        <td className="py-1 pr-3 whitespace-nowrap">{r.person_name}</td>
+                        <td className="py-1 pr-3 whitespace-nowrap">{r.activity_name}</td>
+                        <td className="py-1 pr-3 text-right">{(r.hours || 0).toFixed(2)}</td>
+                        <td className="py-1 pr-3">{r.description || ""}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </details>
   )
 }

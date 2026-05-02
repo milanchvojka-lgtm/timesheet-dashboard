@@ -5,6 +5,7 @@ import {
   ValidationError,
   UploadResult,
   TimesheetEntry,
+  SkippedEntry,
 } from '@/types/upload.types'
 
 /**
@@ -71,12 +72,19 @@ export async function importTimesheetData(
   }
 
   // Transform parsed rows to database format, skipping unrecognized projects
-  const skippedRows: string[] = []
+  const skippedEntries: SkippedEntry[] = []
   const entries: Omit<TimesheetEntry, 'id' | 'created_at' | 'updated_at'>[] = data
     .filter((row) => {
       const category = mapProjectCategory(row.project_name)
       if (category === 'Other') {
-        skippedRows.push(row.project_name)
+        skippedEntries.push({
+          date: row.date,
+          person_name: row.person_name,
+          project_name: row.project_name,
+          activity_name: row.activity_name,
+          hours: row.hours,
+          description: row.description || null,
+        })
         return false
       }
       return true
@@ -98,9 +106,9 @@ export async function importTimesheetData(
       upload_id: uploadId,
     }))
 
-  if (skippedRows.length > 0) {
-    const uniqueSkipped = [...new Set(skippedRows)]
-    console.log(`[Importer] Skipped ${skippedRows.length} entries from unrecognized projects: ${uniqueSkipped.join(', ')}`)
+  if (skippedEntries.length > 0) {
+    const uniqueSkipped = [...new Set(skippedEntries.map((e) => e.project_name))]
+    console.log(`[Importer] Skipped ${skippedEntries.length} entries from unrecognized projects: ${uniqueSkipped.join(', ')}`)
   }
 
   // Insert entries in batches
@@ -157,7 +165,8 @@ export async function importTimesheetData(
     total_rows: data.length,
     successful_rows: successfulRows,
     failed_rows: failedRows,
-    skipped_rows: skippedRows.length,
+    skipped_rows: skippedEntries.length,
+    skipped_entries: skippedEntries,
     validation_errors: validationErrors,
     data_date_from: dataDateFrom,
     data_date_to: dataDateTo,
