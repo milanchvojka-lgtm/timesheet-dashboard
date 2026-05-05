@@ -109,7 +109,7 @@ export async function GET(request: NextRequest) {
     const totalHours = entries.reduce((sum, e) => sum + Number(e.hours), 0)
 
     // Define expected categories in display order
-    const expectedCategories = ['OPS', 'Internal', 'R&D', 'Guiding', 'PR', 'UX Maturity']
+    const expectedCategories = ['OPS', 'Internal', 'R&D', 'Guiding', 'PR', 'UX Maturity', '2F Product']
 
     // Ensure all expected categories are present (even if 0 hours)
     expectedCategories.forEach(category => {

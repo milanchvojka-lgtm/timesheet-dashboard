@@ -71,6 +71,16 @@ export const PROJECT_PATTERNS: Array<{
     pattern: /^UX Maturity_\d{4}\s*🙌$/i,
     category: 'UX Maturity',
   },
+  // 2F Product (tracked as a long-running R&D-adjacent initiative,
+  // but reported as its own category)
+  {
+    pattern: /^2F Product(_\d{4})?$/i,
+    category: '2F Product',
+  },
+  {
+    pattern: /^Design tým 2F Product_\d{4}$/i,
+    category: '2F Product',
+  },
 ]
 
 /**
@@ -125,6 +135,11 @@ export const PROJECT_MAPPING: Record<string, ProjectCategory> = {
   'UX Maturity_2024 🙌': 'UX Maturity',
   'UX Maturity_2025 🙌': 'UX Maturity',
   'UX Maturity_2026 🙌': 'UX Maturity',
+
+  // 2F Product variants
+  '2F Product': '2F Product',
+  '2F Product_2026': '2F Product',
+  'Design tým 2F Product_2026': '2F Product',
 }
 
 /**

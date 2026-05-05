@@ -14,6 +14,7 @@ export const PROJECT_COLORS: Record<ProjectCategory, string> = {
   Guiding: '#8b5cf6',      // purple
   PR: '#ec4899',           // pink
   'UX Maturity': '#06b6d4', // cyan
+  '2F Product': '#14b8a6',  // teal
   Other: '#94a3b8',        // slate
 }
 

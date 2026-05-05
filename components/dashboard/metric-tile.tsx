@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowUp, ArrowDown, Minus } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-export type MetricVariant = "default" | "internal" | "ops" | "rnd" | "guiding" | "pr" | "ux"
+export type MetricVariant = "default" | "internal" | "ops" | "rnd" | "guiding" | "pr" | "ux" | "twoFproduct"
 
 export interface MetricTileProps {
   title: string
@@ -24,6 +24,7 @@ const variantColors: Record<MetricVariant, string> = {
   guiding: "text-[#8b5cf6]",
   pr: "text-[#ec4899]",
   ux: "text-[#06b6d4]",
+  twoFproduct: "text-[#14b8a6]",
 }
 
 export function MetricTile({

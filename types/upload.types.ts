@@ -92,8 +92,12 @@ export interface ValidationError {
 
 /**
  * Skipped Entry
- * A row dropped during import because its project is not in the category mapping
+ * A row dropped during import — either because its project is not in the
+ * category mapping, or because the contributor is not on the team for a
+ * project that requires team-only filtering (e.g. 2F Product).
  */
+export type SkippedReason = 'unrecognized_project' | 'external_contributor'
+
 export interface SkippedEntry {
   date: string
   person_name: string
@@ -101,6 +105,7 @@ export interface SkippedEntry {
   activity_name: string
   hours: number
   description: string | null
+  reason: SkippedReason
 }
 
 /**

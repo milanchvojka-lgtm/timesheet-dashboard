@@ -126,6 +126,7 @@ export type ProjectCategory =
   | 'Guiding'
   | 'PR'
   | 'UX Maturity'
+  | '2F Product'
   | 'Other'
 
 /**

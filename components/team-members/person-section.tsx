@@ -42,7 +42,7 @@ interface PersonSectionProps {
   periodType: PeriodType
 }
 
-const PROJECT_CATEGORIES = ['OPS', 'Internal', 'R&D', 'Guiding', 'PR', 'UX Maturity'] as const
+const PROJECT_CATEGORIES = ['OPS', 'Internal', 'R&D', 'Guiding', 'PR', 'UX Maturity', '2F Product'] as const
 const ACTIVITY_CATEGORIES = ['OPS_Hiring', 'OPS_Jobs', 'OPS_Reviews', 'OPS_Guiding', 'Unpaired'] as const
 
 const TOOLTIP_STYLE = {

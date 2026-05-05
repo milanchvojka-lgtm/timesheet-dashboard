@@ -71,7 +71,24 @@ export async function importTimesheetData(
     }
   }
 
+  // Load team members for team-only project filtering.
+  // Used by '2F Product' where external contributors must be excluded.
+  // Match by name (Costlocker XLSX exports omit person_id, parser hashes the
+  // name to fabricate one — so users.costlocker_person_id won't line up).
+  const { data: teamUsers } = await supabase
+    .from('users')
+    .select('name')
+    .eq('is_team_member', true)
+    .not('name', 'is', null)
+
+  const teamPersonNames = new Set<string>(
+    (teamUsers || [])
+      .map((u) => (u.name || '').trim().toLowerCase())
+      .filter((n) => n.length > 0)
+  )
+
   // Transform parsed rows to database format, skipping unrecognized projects
+  // and external contributors on team-only projects.
   const skippedEntries: SkippedEntry[] = []
   const entries: Omit<TimesheetEntry, 'id' | 'created_at' | 'updated_at'>[] = data
     .filter((row) => {
@@ -84,6 +101,19 @@ export async function importTimesheetData(
           activity_name: row.activity_name,
           hours: row.hours,
           description: row.description || null,
+          reason: 'unrecognized_project',
+        })
+        return false
+      }
+      if (category === '2F Product' && !teamPersonNames.has(row.person_name.trim().toLowerCase())) {
+        skippedEntries.push({
+          date: row.date,
+          person_name: row.person_name,
+          project_name: row.project_name,
+          activity_name: row.activity_name,
+          hours: row.hours,
+          description: row.description || null,
+          reason: 'external_contributor',
         })
         return false
       }

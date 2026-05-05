@@ -55,7 +55,8 @@ const config: Config = {
         rnd: '#f59e0b',
         guiding: '#8b5cf6',
         pr: '#ec4899',
-        ux: '#06b6d4'
+        ux: '#06b6d4',
+        twoFproduct: '#14b8a6'
       },
       borderRadius: {
         lg: 'var(--radius)',

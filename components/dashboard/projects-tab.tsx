@@ -112,6 +112,7 @@ export function ProjectsTab({ dateFrom, dateTo }: ProjectsTabProps) {
       case 'Guiding': return 'guiding'
       case 'PR': return 'pr'
       case 'UX Maturity': return 'ux'
+      case '2F Product': return 'twoFproduct'
       default: return 'default'
     }
   }

@@ -155,7 +155,7 @@ export function ProjectsSection({ dateFrom, dateTo, periodType }: ProjectsSectio
 
         {/* Quarter: single total FTE trend line */}
         {periodType === 'quarter' && trends.length > 1 && (() => {
-          const PROJECT_CATEGORIES = ['OPS', 'Internal', 'R&D', 'Guiding', 'PR', 'UX Maturity']
+          const PROJECT_CATEGORIES = ['OPS', 'Internal', 'R&D', 'Guiding', 'PR', 'UX Maturity', '2F Product']
           const trendData = trends.map(t => ({
             month: t.month,
             totalFTE: PROJECT_CATEGORIES.reduce((sum, cat) => sum + (Number(t[cat]) || 0), 0)
@@ -200,7 +200,7 @@ export function ProjectsSection({ dateFrom, dateTo, periodType }: ProjectsSectio
 
         {/* Year / Range: stacked area chart per project category */}
         {(periodType === 'year' || periodType === 'range') && trends.length > 1 && (() => {
-          const PROJECT_CATEGORIES = ['OPS', 'Internal', 'R&D', 'Guiding', 'PR', 'UX Maturity'] as const
+          const PROJECT_CATEGORIES = ['OPS', 'Internal', 'R&D', 'Guiding', 'PR', 'UX Maturity', '2F Product'] as const
           const activeCategories = PROJECT_CATEGORIES.filter(cat =>
             trends.some(t => Number(t[cat]) > 0)
           )

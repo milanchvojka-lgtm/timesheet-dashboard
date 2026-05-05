@@ -8,6 +8,8 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Separator } from "@/components/ui/separator"
 import { CheckCircle2, XCircle, Clock, FileText, Calendar, User } from "lucide-react"
 
+type SkippedReason = 'unrecognized_project' | 'external_contributor'
+
 interface SkippedEntry {
   date: string
   person_name: string
@@ -15,6 +17,7 @@ interface SkippedEntry {
   activity_name: string
   hours: number
   description: string | null
+  reason: SkippedReason
 }
 
 interface UploadResult {
@@ -264,14 +267,17 @@ export default function UploadPage() {
 }
 
 function SkippedEntriesDisclosure({ entries }: { entries: SkippedEntry[] }) {
-  const groups = entries.reduce<Record<string, SkippedEntry[]>>((acc, e) => {
-    const key = e.project_name || "(empty)"
-    if (!acc[key]) acc[key] = []
-    acc[key].push(e)
-    return acc
-  }, {})
+  // Group by reason first, then by project within each reason
+  const byReason = entries.reduce<Record<SkippedReason, SkippedEntry[]>>(
+    (acc, e) => {
+      const r = e.reason || 'unrecognized_project'
+      if (!acc[r]) acc[r] = []
+      acc[r].push(e)
+      return acc
+    },
+    {} as Record<SkippedReason, SkippedEntry[]>
+  )
 
-  const sortedGroups = Object.entries(groups).sort((a, b) => b[1].length - a[1].length)
   const totalHours = entries.reduce((sum, e) => sum + (e.hours || 0), 0)
 
   const formatDate = (d: string) => {
@@ -279,47 +285,85 @@ function SkippedEntriesDisclosure({ entries }: { entries: SkippedEntry[] }) {
     return isNaN(date.getTime()) ? d : date.toLocaleDateString()
   }
 
+  const reasonLabel: Record<SkippedReason, string> = {
+    unrecognized_project: 'Unrecognized projects',
+    external_contributor: 'External contributors (not in team)',
+  }
+
+  const reasonHelp: Record<SkippedReason, React.ReactNode> = {
+    unrecognized_project: (
+      <>
+        These rows were not imported because their project is not mapped to any category.
+        To include them, add the project to <code>config/projects.ts</code> and re-upload.
+      </>
+    ),
+    external_contributor: (
+      <>
+        These rows were not imported because the contributor is not a member of the team.
+        Team-only projects (e.g. 2F Product) include only entries from people marked as
+        team members in the admin settings.
+      </>
+    ),
+  }
+
   return (
     <details className="mt-3 rounded border border-yellow-300 bg-yellow-50 p-3 text-yellow-900">
       <summary className="cursor-pointer font-medium">
-        Skipped: {entries.length} entries ({totalHours.toFixed(1)}h) — unrecognized projects
+        Skipped: {entries.length} entries ({totalHours.toFixed(1)}h)
       </summary>
-      <p className="mt-2 text-xs italic">
-        These rows were not imported because their project is not mapped to any category.
-        To include them, add the project to <code>config/projects.ts</code> and re-upload.
-      </p>
-      <div className="mt-3 space-y-4">
-        {sortedGroups.map(([project, rows]) => {
-          const projectHours = rows.reduce((sum, e) => sum + (e.hours || 0), 0)
+      <div className="mt-3 space-y-6">
+        {(Object.entries(byReason) as Array<[SkippedReason, SkippedEntry[]]>).map(([reason, reasonEntries]) => {
+          const reasonHours = reasonEntries.reduce((sum, e) => sum + (e.hours || 0), 0)
+          const groups = reasonEntries.reduce<Record<string, SkippedEntry[]>>((acc, e) => {
+            const key = e.project_name || "(empty)"
+            if (!acc[key]) acc[key] = []
+            acc[key].push(e)
+            return acc
+          }, {})
+          const sortedGroups = Object.entries(groups).sort((a, b) => b[1].length - a[1].length)
+
           return (
-            <div key={project}>
-              <div className="mb-1 text-sm font-semibold">
-                {project} <span className="font-normal text-yellow-700">— {rows.length} entries, {projectHours.toFixed(1)}h</span>
+            <div key={reason} className="space-y-3">
+              <div className="border-b border-yellow-300 pb-1">
+                <div className="text-sm font-semibold">
+                  {reasonLabel[reason]} <span className="font-normal text-yellow-700">— {reasonEntries.length} entries, {reasonHours.toFixed(1)}h</span>
+                </div>
+                <p className="mt-1 text-xs italic">{reasonHelp[reason]}</p>
               </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-xs">
-                  <thead>
-                    <tr className="border-b border-yellow-300 text-left">
-                      <th className="py-1 pr-3 font-medium">Date</th>
-                      <th className="py-1 pr-3 font-medium">Person</th>
-                      <th className="py-1 pr-3 font-medium">Activity</th>
-                      <th className="py-1 pr-3 font-medium text-right">Hours</th>
-                      <th className="py-1 pr-3 font-medium">Description</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {rows.map((r, i) => (
-                      <tr key={i} className="border-b border-yellow-200/60">
-                        <td className="py-1 pr-3 whitespace-nowrap">{formatDate(r.date)}</td>
-                        <td className="py-1 pr-3 whitespace-nowrap">{r.person_name}</td>
-                        <td className="py-1 pr-3 whitespace-nowrap">{r.activity_name}</td>
-                        <td className="py-1 pr-3 text-right">{(r.hours || 0).toFixed(2)}</td>
-                        <td className="py-1 pr-3">{r.description || ""}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              {sortedGroups.map(([project, rows]) => {
+                const projectHours = rows.reduce((sum, e) => sum + (e.hours || 0), 0)
+                return (
+                  <div key={project}>
+                    <div className="mb-1 text-sm font-semibold">
+                      {project} <span className="font-normal text-yellow-700">— {rows.length} entries, {projectHours.toFixed(1)}h</span>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs">
+                        <thead>
+                          <tr className="border-b border-yellow-300 text-left">
+                            <th className="py-1 pr-3 font-medium">Date</th>
+                            <th className="py-1 pr-3 font-medium">Person</th>
+                            <th className="py-1 pr-3 font-medium">Activity</th>
+                            <th className="py-1 pr-3 font-medium text-right">Hours</th>
+                            <th className="py-1 pr-3 font-medium">Description</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {rows.map((r, i) => (
+                            <tr key={i} className="border-b border-yellow-200/60">
+                              <td className="py-1 pr-3 whitespace-nowrap">{formatDate(r.date)}</td>
+                              <td className="py-1 pr-3 whitespace-nowrap">{r.person_name}</td>
+                              <td className="py-1 pr-3 whitespace-nowrap">{r.activity_name}</td>
+                              <td className="py-1 pr-3 text-right">{(r.hours || 0).toFixed(2)}</td>
+                              <td className="py-1 pr-3">{r.description || ""}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           )
         })}
