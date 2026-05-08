@@ -41,3 +41,6 @@ next-env.d.ts
 
 # claude code
 /memory
+
+# exploratory analyses (contain person names + hours)
+/docs/analyses/
