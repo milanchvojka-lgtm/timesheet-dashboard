@@ -82,7 +82,7 @@ export function buildRecommendation(candidates: LookupCandidate[]): LookupResult
   let recommendation: LookupRecommendation | null = null
   let bestCategory: string | null = null
   let bestHours = -1
-  for (const [category, hours] of cleanHoursByCategory.entries()) {
+  for (const [category, hours] of Array.from(cleanHoursByCategory.entries())) {
     if (hours > bestHours) {
       bestHours = hours
       bestCategory = category
