@@ -2,7 +2,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 
 interface BreakdownRow {
@@ -17,26 +17,11 @@ interface LookupResult {
   warning: { unpairedCount: number; unpairedHours: number }
   examples: { projectName: string; description: string | null }[]
 }
-interface CommonActivity {
-  activityName: string
-  projectCategory: string | null
-  totalHours: number
-  entryCount: number
-}
 
 export function ActivityLookup() {
   const [query, setQuery] = useState("")
   const [result, setResult] = useState<LookupResult | null>(null)
-  const [common, setCommon] = useState<CommonActivity[]>([])
   const [loading, setLoading] = useState(false)
-
-  // Load the common-activities list once.
-  useEffect(() => {
-    fetch("/api/tracking-guide/lookup")
-      .then((r) => r.json())
-      .then((d) => setCommon(d.common ?? []))
-      .catch(() => setCommon([]))
-  }, [])
 
   // Debounced search.
   useEffect(() => {
@@ -56,13 +41,10 @@ export function ActivityLookup() {
   }, [query])
 
   return (
-    <Card className="mt-6">
-      <CardHeader>
-        <CardTitle>Kam to patří?</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
+    <Card>
+      <CardContent className="space-y-3 py-5">
         <Input
-          placeholder="DesignOps status, Demo day…"
+          placeholder="Napiš název aktivity, např. Demoday"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
@@ -89,21 +71,6 @@ export function ActivityLookup() {
                 šlo omylem jinam.
               </p>
             )}
-          </div>
-        )}
-
-        {!result && common.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {common.map((c) => (
-              <button
-                key={c.activityName}
-                type="button"
-                onClick={() => setQuery(c.activityName)}
-                className="rounded-full border px-3 py-1 text-sm hover:bg-muted"
-              >
-                {c.activityName}
-              </button>
-            ))}
           </div>
         )}
       </CardContent>

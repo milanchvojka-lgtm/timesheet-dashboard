@@ -19,9 +19,14 @@ function Dot({ color }: { color: string }) {
 export default function TrackingGuidePage() {
   return (
     <div className="container mx-auto py-8 px-4 max-w-3xl">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-1">Tracking Guide</h1>
-        <p className="text-muted-foreground">Kam trackovat a co napsat do popisu.</p>
+      <h1 className="text-3xl font-bold mb-8">Tracking Guide</h1>
+
+      {/* Section 1: the rules — how the system works */}
+      <div className="mb-3">
+        <h2 className="text-lg font-semibold">Kam trackovat a co napsat</h2>
+        <p className="text-sm text-muted-foreground">
+          Do jakého projektu patří tvá práce a co napsat do popisu aktivity.
+        </p>
       </div>
 
       {/* OPS hero — the only category where the system enforces the format */}
@@ -66,6 +71,13 @@ export default function TrackingGuidePage() {
         ))}
       </div>
 
+      {/* Section 2: the lookup — same heading treatment as section 1 */}
+      <div className="mt-8 mb-3">
+        <h2 className="text-lg font-semibold">Kam co natrackovat</h2>
+        <p className="text-sm text-muted-foreground">
+          Napiš, co chceš natrackovat (např. Demoday, Team sync), a systém ti poradí, kam to patří.
+        </p>
+      </div>
       <ActivityLookup />
     </div>
   )
