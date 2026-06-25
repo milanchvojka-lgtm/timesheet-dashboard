@@ -35,6 +35,8 @@ describe('buildRecommendation', () => {
     expect(result.recommendation?.projectCategory).toBe('Internal')
     expect(result.recommendation?.project).toBe('Design tým interní')
     expect(result.recommendation?.guideKey).toBe('internal')
+    // 2 of 3 matched cases go to Internal → 67 %.
+    expect(result.recommendation?.sharePct).toBe(67)
   })
 
   it('reports the unpaired warning totals', () => {
@@ -71,12 +73,12 @@ describe('buildRecommendation with an editorial override', () => {
     { projectName: 'Design tým interní', projectCategory: 'Internal', activityName: 'sprint planning', description: '', hours: 40, isUnpaired: false },
   ]
 
-  it('override wins over historical data and surfaces the previous category', () => {
+  it('override wins over historical data and carries no sharePct (it is a decision, not a statistic)', () => {
     const result = buildRecommendation(historicallyInternal, 'R&D')
     expect(result.recommendation?.projectCategory).toBe('R&D')
     expect(result.recommendation?.project).toBe('Design tým R&D')
     expect(result.recommendation?.overridden).toBe(true)
-    expect(result.recommendation?.previousCategory).toBe('Internal')
+    expect(result.recommendation?.sharePct).toBeNull()
   })
 
   it('applies even when there is no matching history', () => {

@@ -18,6 +18,7 @@ interface LookupResult {
     guideKey: string | null
     overridden: boolean
     previousCategory: string | null
+    sharePct: number | null
   } | null
   breakdown: BreakdownRow[]
   warning: { unpairedCount: number; unpairedHours: number }
@@ -64,11 +65,6 @@ export function ActivityLookup() {
                 →{" "}
                 <strong className="text-teal-700">{result.recommendation.projectCategory}</strong>
                 {result.recommendation.project ? ` · ${result.recommendation.project}` : ""}
-                {result.recommendation.previousCategory && (
-                  <span className="text-muted-foreground">
-                    {" "}(nově — historicky šlo na {result.recommendation.previousCategory})
-                  </span>
-                )}
               </p>
             ) : (
               <p className="text-sm text-muted-foreground">
@@ -76,10 +72,9 @@ export function ActivityLookup() {
               </p>
             )}
 
-            {result.warning.unpairedCount > 0 && (
-              <p className="text-sm text-amber-600">
-                ⚠️ {result.warning.unpairedCount} záznamů ({Math.round(result.warning.unpairedHours)} h)
-                šlo omylem jinam.
+            {result.recommendation?.sharePct !== null && result.recommendation && (
+              <p className="text-sm text-muted-foreground">
+                ✓ Takhle to trackuje {result.recommendation.sharePct} % případů.
               </p>
             )}
           </div>

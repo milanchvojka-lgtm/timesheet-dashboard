@@ -22,6 +22,7 @@ export interface LookupRecommendation {
   guideKey: string | null
   overridden: boolean // true when an editorial override decided this, not history
   previousCategory: string | null // where history sent it, when that differs from an override
+  sharePct: number | null // % of matched cases tracked to this category (data-driven only)
 }
 
 export interface LookupResult {
@@ -89,6 +90,7 @@ export function buildRecommendation(
   }
 
   const breakdown = Array.from(byCategory.values()).sort((a, b) => b.totalHours - a.totalHours)
+  const totalEntries = breakdown.reduce((sum, b) => sum + b.entryCount, 0)
 
   let recommendation: LookupRecommendation | null = null
   let bestCategory: string | null = null
@@ -101,6 +103,7 @@ export function buildRecommendation(
   }
   if (overrideCategory) {
     // Editorial override wins, even when there is no matching history at all.
+    // It's a decision, not a statistic — so no sharePct.
     const guide = getGuideByProjectCategory(overrideCategory)
     recommendation = {
       projectCategory: overrideCategory,
@@ -109,15 +112,18 @@ export function buildRecommendation(
       overridden: true,
       previousCategory:
         bestCategory && bestCategory !== overrideCategory ? bestCategory : null,
+      sharePct: null,
     }
   } else if (bestCategory) {
     const guide = getGuideByProjectCategory(bestCategory)
+    const bestEntries = byCategory.get(bestCategory)?.entryCount ?? 0
     recommendation = {
       projectCategory: bestCategory,
       project: guide?.project ?? null,
       guideKey: guide?.key ?? null,
       overridden: false,
       previousCategory: null,
+      sharePct: totalEntries > 0 ? Math.round((bestEntries / totalEntries) * 100) : null,
     }
   }
 
