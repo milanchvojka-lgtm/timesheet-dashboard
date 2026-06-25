@@ -54,6 +54,14 @@ export async function GET(request: NextRequest) {
       }
 
       const common = Array.from(agg.values())
+        .filter((item) => {
+          const name = item.activityName.trim().toLowerCase()
+          // Determine the dominant category for this item (needed for generic check)
+          let topCat = ''
+          let topH = -1
+          item.hoursByCategory.forEach((h, cat) => { if (h > topH) { topH = h; topCat = cat } })
+          return name !== 'internal' && name !== topCat.trim().toLowerCase()
+        })
         .sort((a, b) => b.totalHours - a.totalHours)
         .slice(0, 20)
         .map((item) => {
@@ -85,7 +93,7 @@ export async function GET(request: NextRequest) {
     const keywords = (keywordsData ?? []) as ActivityKeyword[]
 
     // Broad pre-filter on the first token, then refine with normalized matching in JS.
-    const firstToken = normalizedQuery.split(' ')[0].replace(/[^a-z0-9]/gi, '')
+    const firstToken = normalizedQuery.split(' ')[0].replace(/[,()%]/g, '')
     // If sanitization resulted in empty token, return empty results for consistency.
     if (!firstToken) {
       return NextResponse.json(buildRecommendation([]))
