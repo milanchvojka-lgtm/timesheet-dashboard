@@ -5,10 +5,7 @@
 
 ## Problem
 
-Designers are unsure how to track their work into Costlocker. There used to be a printed/Figma
-"cheat sheet" (project → keyword in activity description) that made it much easier. We want that
-cheat sheet to live inside the Timesheet Analytics app as a clean, always-available reference page,
-so tracking is consistent and our reporting/quality scores stay reliable.
+Designers are unsure how to track their work into Costlocker. There used to be a printed/Figma "cheat sheet" (project → keyword in activity description) that made it much easier. We want that cheat sheet to live inside the Timesheet Analytics app as a clean, always-available reference page, so tracking is consistent and our reporting/quality scores stay reliable.
 
 The page has **two complementary parts**:
 1. **Tracking Guide** (static rules) — the cheat sheet: project → description format. *Part 1.*
@@ -17,23 +14,17 @@ The page has **two complementary parts**:
 
 ## Goals
 
-- **Part 1 (Guide):** A single, always-accessible page that shows **which Costlocker project to
-  track to** and **what to write in the activity description** for each design-team activity type.
-- Make explicit **where the system strictly checks the description format (OPS)** vs. where it is
-  just a readability convention (R&D, PR, Internal, Guiding, 2F Product) — this is the key
-  improvement over the original cheat sheet and explains *why* the `Hiring:` / `Jobs:` / `Reviews:`
+- **Part 1 (Guide):** A single, always-accessible page that shows **which Costlocker project to track to** and **what to write in the activity description** for each design-team activity type.
+- Make explicit **where the system strictly checks the description format (OPS)** vs. where it is just a readability convention (R&D, PR, Internal, Guiding, 2F Product) — this is the key improvement over the original cheat sheet and explains *why* the `Hiring:` / `Jobs:` / `Reviews:`
   format matters.
-- **Part 2 (Lookup):** Let a designer type a specific activity (e.g. `design.ops.status`,
-  `Demo day`) and get a recommendation of where it should be tracked, derived from how the team
-  *correctly* tracked similar activities in the past.
+- **Part 2 (Lookup):** Let a designer type a specific activity (e.g. `design.ops.status`, `Demo day`) and get a recommendation of where it should be tracked, derived from how the team *correctly* tracked similar activities in the past.
 - Accessible to everyone (including viewers without team-member role).
 
 ## Non-goals
 
 - No dynamic/data-driven content. Content is **static**, hand-maintained in code.
 - No editing UI. (Keyword management already lives in Admin → Keywords; this page is read-only.)
-- No coverage of billable client-project tracking — the guide is only for the internal/ops
-  categories where people get confused.
+- No coverage of billable client-project tracking — the guide is only for the internal/ops categories where people get confused.
 
 ## Decisions (from brainstorming)
 
@@ -99,8 +90,7 @@ export const TRACKING_GUIDE: TrackingCategory[]
 ## Content (Czech, final)
 
 ### 🔵 OPS — project `Design tým OPS` — **strict** (system enforces format)
-Description **must start** with the keyword + colon, otherwise the entry is "Unpaired" and lowers
-the quality score / is flagged by Review Buddy.
+Description **must start** with the keyword + colon, otherwise the entry is "Unpaired" and lowers the quality score / is flagged by Review Buddy.
 
 | Entry | Description format | Example | Belongs here |
 |---|---|---|---|
@@ -173,33 +163,40 @@ Normalize both the user query and the searched columns before matching:
 
 ### "Most common activities" list
 
-Empty/short query → `GROUP BY activity_name ORDER BY total_hours DESC LIMIT ~20`, each annotated
-with its recommended (dominant clean) category. Rendered as clickable chips that run the lookup.
+Empty/short query → `GROUP BY activity_name ORDER BY total_hours DESC LIMIT ~20`, each annotated with its recommended (dominant clean) category. Rendered as clickable chips that run the lookup.
 
-### Lookup UI (`activity-lookup.tsx`, client)
+### Lookup UI (`activity-lookup.tsx`, client) — slim
 
-- Debounced search input: "Kam to patří? Napiš aktivitu, např. `DesignOps status`".
-- Result card: large recommendation (→ category + project), the description format, a breakdown
-  table (kategorie · záznamů · hodin · z toho špatně), a ⚠️ warning banner when Unpaired usage
-  exists, and a collapsible list of example entries.
-- Below the input: "Časté aktivity" chips (the common-activities list).
+- Sits **below** the guide cards, in its own card titled "Kam to patří?".
+- Debounced search input.
+- Result: **one-line** recommendation (`→ Internal · Design tým interní`) + a ⚠️ one-line warning
+  when Unpaired usage exists ("X záznamů šlo omylem do …"). No breakdown table, no examples list in
+  the default view (the data is still returned by the API; just not rendered in v1 — keeps it lean).
+- Below the input: clickable chips of the most common activities.
+- "No clean matches" → short note pointing the user to the rules above.
 
 ### Privacy note
 
-Descriptions can contain people's names (`Hiring: Jméno Příjmení`). This is an internal team tool;
-acceptable. Examples show project + description as-is; no extra redaction in v1.
+Descriptions can contain people's names (`Hiring: Jméno Příjmení`). This is an internal team tool; acceptable. Examples show project + description as-is; no extra redaction in v1.
 
-## Page layout
+## Page layout (final — "OPS hero + mini cards", layout C)
 
-1. **Header** — page title + short intro: "Jak trackovat do Costlockeru a proč na tom záleží."
-2. **Legend** — explains the "Projekt → co napsat do popisu" model and the two badges:
-   **„Systém hlídá formát"** (strict) vs. **„Volný text"** (free).
-3. **Category cards** — one card per category, colored left border in the category color:
-   - Card header: project name + strict/free badge.
-   - Sub-blocks (entries): entry title, exact `descriptionFormat` shown in `code` style,
-     example(s), and "belongs here" text.
-   - PR card lists its 4 activity types under one entry.
-4. **Responsive grid** — 1 column on mobile, 2 columns on desktop.
+Single column, max-width ~760px. Order top→bottom:
+
+1. **Header** — `Tracking Guide` + one-line sub "Kam trackovat a co napsat do popisu."
+2. **OPS hero card** — prominent, colored top border (OPS blue), a `formát hlídá systém` flag, and a
+   3-column grid of the three OPS rules (Hiring / Jobs / Reviews), each showing the exact
+   `descriptionFormat` in `code`. This is the only category where the system enforces the format,
+   so it gets the visual weight.
+3. **"Ostatní projekty — popis volný"** — a row of 5 compact mini-cards (Guiding, R&D, PR, Internal,
+   2F Product). Each: color dot + label + a **single** short "co napsat" line. No intros, no
+   examples, no per-entry essays.
+4. **Lookup card** ("Kam to patří?") — see slim Lookup UI above.
+
+**Content simplification (vs. earlier draft):** the non-OPS categories render only one short line
+each. `guide-data.ts` keeps the richer fields, but the page renders the minimal view: OPS uses
+`entries[].title` + `descriptionFormat`; the others use a short summary line. Responsive: the OPS
+rules grid and the mini-cards collapse to 1–2 columns on narrow screens.
 
 ## Testing
 

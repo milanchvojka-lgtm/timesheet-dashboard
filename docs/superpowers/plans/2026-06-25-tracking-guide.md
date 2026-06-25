@@ -32,7 +32,7 @@
 - Consumes: `ProjectCategory` from `@/types/costlocker.types`.
 - Produces:
   - `interface TrackingEntry { title: string; descriptionFormat: string; examples?: string[]; belongsHere: string }`
-  - `interface TrackingCategory { key: 'ops'|'guiding'|'rnd'|'pr'|'internal'|'product'; label: string; project: string; projectCategory: ProjectCategory; color: string; strict: boolean; intro: string; entries: TrackingEntry[] }`
+  - `interface TrackingCategory { key: 'ops'|'guiding'|'rnd'|'pr'|'internal'|'product'; label: string; project: string; projectCategory: ProjectCategory; color: string; strict: boolean; intro: string; summary: string; entries: TrackingEntry[] }` — `summary` is the short one-line "co napsat" shown on the mini-cards.
   - `const TRACKING_GUIDE: TrackingCategory[]`
   - `function getGuideByProjectCategory(projectCategory: string): TrackingCategory | undefined`
 
@@ -56,6 +56,7 @@ describe('TRACKING_GUIDE', () => {
       expect(cat.color).toMatch(/^#[0-9a-f]{6}$/i)
       expect(cat.entries.length).toBeGreaterThanOrEqual(1)
       expect(cat.intro.length).toBeGreaterThan(0)
+      expect(cat.summary.length).toBeGreaterThan(0)
     }
   })
 
@@ -98,6 +99,7 @@ export interface TrackingCategory {
   color: string
   strict: boolean
   intro: string
+  summary: string // short one-liner for the mini-cards
   entries: TrackingEntry[]
 }
 
@@ -109,27 +111,12 @@ export const TRACKING_GUIDE: TrackingCategory[] = [
     projectCategory: 'OPS',
     color: '#3b82f6',
     strict: true,
-    intro:
-      'Popis musí začínat klíčovým slovem a dvojtečkou, jinak se záznam nespáruje (sníží quality score a nahlásí ho Review Buddy).',
+    intro: 'Popis musí začínat klíčovým slovem a dvojtečkou.',
+    summary: 'Hiring / Jobs / Reviews — prefix s dvojtečkou',
     entries: [
-      {
-        title: 'Hiring',
-        descriptionFormat: 'Hiring: Jméno Příjmení',
-        examples: ['Hiring: Jan Novák'],
-        belongsHere: 'Cokoli kolem náboru designerů — od přípravy na interview po onboarding.',
-      },
-      {
-        title: 'Jobs',
-        descriptionFormat: 'Jobs: Název jobu',
-        examples: ['Jobs: Eurowag redesign'],
-        belongsHere: 'Příprava jobu k realizaci, matchmaking schůzky, chemistry cally apod.',
-      },
-      {
-        title: 'Reviews',
-        descriptionFormat: 'Reviews: Jméno Příjmení',
-        examples: ['Reviews: Petra Malá'],
-        belongsHere: 'Reviews schůzky — od přípravy po měsíční maintenance.',
-      },
+      { title: 'Hiring', descriptionFormat: 'Hiring: Jméno Příjmení', belongsHere: 'Nábor designerů.' },
+      { title: 'Jobs', descriptionFormat: 'Jobs: Název jobu', belongsHere: 'Příprava jobu k realizaci.' },
+      { title: 'Reviews', descriptionFormat: 'Reviews: Jméno Příjmení', belongsHere: 'Reviews schůzky.' },
     ],
   },
   {
@@ -140,17 +127,9 @@ export const TRACKING_GUIDE: TrackingCategory[] = [
     color: '#8b5cf6',
     strict: false,
     intro: 'Cokoli na Guiding projektu se počítá jako Guiding.',
+    summary: 'Jméno designera / job',
     entries: [
-      {
-        title: 'Guiding designer',
-        descriptionFormat: 'Jméno Příjmení designera',
-        belongsHere: 'Cokoli kolem guidingu designerů, od přípravy po schůzky.',
-      },
-      {
-        title: 'Guiding project',
-        descriptionFormat: 'Název jobu',
-        belongsHere: 'Cokoli kolem guidingu projektů, od přípravy po schůzky.',
-      },
+      { title: 'Guiding', descriptionFormat: 'Jméno designera nebo název jobu', belongsHere: 'Guiding designerů i projektů.' },
     ],
   },
   {
@@ -160,13 +139,10 @@ export const TRACKING_GUIDE: TrackingCategory[] = [
     projectCategory: 'R&D',
     color: '#f59e0b',
     strict: false,
-    intro: 'Volný text — popisuj název úkolu / aktivity.',
+    intro: 'Volný text — popisuj název úkolu.',
+    summary: 'Název úkolu',
     entries: [
-      {
-        title: 'Inovace & ladění technik, postupů',
-        descriptionFormat: 'Název úkolu / aktivity',
-        belongsHere: 'Vylepšování toho, jak design v 2F funguje.',
-      },
+      { title: 'R&D', descriptionFormat: 'Název úkolu', belongsHere: 'Inovace a ladění postupů designu v 2F.' },
     ],
   },
   {
@@ -176,28 +152,10 @@ export const TRACKING_GUIDE: TrackingCategory[] = [
     projectCategory: 'PR',
     color: '#ec4899',
     strict: false,
-    intro: 'Volný text — jakákoli komunikace o naší práci ven i dovnitř.',
+    intro: 'Volný text — komunikace o naší práci ven i dovnitř.',
+    summary: 'Talky, články, news',
     entries: [
-      {
-        title: 'Public talky, posty na socky, články',
-        descriptionFormat: 'Název úkolu / aktivity',
-        belongsHere: 'Komunikace o naší práci směrem ven.',
-      },
-      {
-        title: 'Budování vztahů v kanceláři',
-        descriptionFormat: 'Název úkolu / aktivity',
-        belongsHere: 'Vztahy a networking v kanceláři.',
-      },
-      {
-        title: 'Public & interní komunikace',
-        descriptionFormat: 'Název úkolu / aktivity',
-        belongsHere: 'Design team news, Design therapy & Demoday report.',
-      },
-      {
-        title: 'Kuchyňkový výzkum',
-        descriptionFormat: 'Název úkolu / aktivity',
-        belongsHere: 'Neformální výzkum a sdílení.',
-      },
+      { title: 'PR', descriptionFormat: 'Název úkolu', belongsHere: 'Talky, články, posty, team news, Demoday report.' },
     ],
   },
   {
@@ -208,13 +166,9 @@ export const TRACKING_GUIDE: TrackingCategory[] = [
     color: '#64748b',
     strict: false,
     intro: 'Všechny aktivity mimo OPS, R&D, PR a Guiding.',
+    summary: 'Vše ostatní',
     entries: [
-      {
-        title: 'Interní aktivity',
-        descriptionFormat: 'Název aktivity',
-        belongsHere:
-          'Team sync / work / meetings, schůzky, trackování, komunikace (e-mail, chat, telefon…).',
-      },
+      { title: 'Internal', descriptionFormat: 'Název aktivity', belongsHere: 'Syncy, schůzky, trackování, komunikace.' },
     ],
   },
   {
@@ -224,13 +178,10 @@ export const TRACKING_GUIDE: TrackingCategory[] = [
     projectCategory: '2F Product',
     color: '#14b8a6',
     strict: false,
-    intro: 'Volný text — práce na produktu 2F (R&D-adjacent iniciativa).',
+    intro: 'Volný text — práce na produktu 2F.',
+    summary: 'Práce na produktu',
     entries: [
-      {
-        title: 'Práce na produktu 2F',
-        descriptionFormat: 'Název úkolu / aktivity',
-        belongsHere: 'Vývoj a ladění produktu 2F.',
-      },
+      { title: '2F Product', descriptionFormat: 'Název úkolu', belongsHere: 'Vývoj a ladění produktu 2F.' },
     ],
   },
 ]
@@ -703,73 +654,69 @@ export default async function TrackingGuideLayout({
 
 ```tsx
 // app/tracking-guide/page.tsx
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { TRACKING_GUIDE, type TrackingCategory } from "@/lib/tracking-guide/guide-data"
+import { TRACKING_GUIDE } from "@/lib/tracking-guide/guide-data"
 
-function CategoryCard({ category }: { category: TrackingCategory }) {
+const OPS = TRACKING_GUIDE.find((c) => c.key === "ops")!
+const OTHERS = TRACKING_GUIDE.filter((c) => c.key !== "ops")
+
+function Dot({ color }: { color: string }) {
   return (
-    <Card className="overflow-hidden border-l-4" style={{ borderLeftColor: category.color }}>
-      <CardHeader>
-        <div className="flex items-center justify-between gap-2">
-          <CardTitle style={{ color: category.color }}>{category.label}</CardTitle>
-          <Badge variant={category.strict ? "default" : "secondary"}>
-            {category.strict ? "Systém hlídá formát" : "Volný text"}
-          </Badge>
-        </div>
-        <p className="text-sm text-muted-foreground">{category.project}</p>
-        <p className="text-sm">{category.intro}</p>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {category.entries.map((entry) => (
-          <div key={entry.title} className="space-y-1">
-            <h4 className="font-semibold">{entry.title}</h4>
-            <code className="inline-block rounded bg-muted px-2 py-1 text-sm">
-              {entry.descriptionFormat}
-            </code>
-            {entry.examples && (
-              <p className="text-sm text-muted-foreground">
-                Příklad: {entry.examples.join(", ")}
-              </p>
-            )}
-            <p className="text-sm">{entry.belongsHere}</p>
-          </div>
-        ))}
-      </CardContent>
-    </Card>
+    <span
+      className="inline-block h-2.5 w-2.5 rounded-sm"
+      style={{ backgroundColor: color }}
+    />
   )
 }
 
 export default function TrackingGuidePage() {
   return (
-    <div className="container mx-auto py-8 px-4 max-w-5xl">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-2">Tracking Guide</h1>
-        <p className="text-muted-foreground text-lg">
-          Jak trackovat do Costlockeru a proč na tom záleží.
-        </p>
+    <div className="container mx-auto py-8 px-4 max-w-3xl">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold mb-1">Tracking Guide</h1>
+        <p className="text-muted-foreground">Kam trackovat a co napsat do popisu.</p>
       </div>
 
-      <Card className="mb-6 bg-muted/40">
-        <CardContent className="py-4 text-sm space-y-1">
-          <p>
-            <strong>Projekt → co napsat do popisu.</strong> U OPS systém kontroluje formát
-            popisu (prefix s dvojtečkou) — u ostatních kategorií je popis jen pro čitelnost.
+      {/* OPS hero — the only category where the system enforces the format */}
+      <Card className="mb-4 border-t-4" style={{ borderTopColor: OPS.color }}>
+        <CardContent className="py-5">
+          <div className="flex items-center gap-3">
+            <Dot color={OPS.color} />
+            <span className="text-lg font-bold">{OPS.label}</span>
+            <Badge variant="default">formát hlídá systém</Badge>
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {OPS.project} — {OPS.intro}
           </p>
-          <div className="flex flex-wrap gap-3 pt-1">
-            <span className="flex items-center gap-2">
-              <Badge variant="default">Systém hlídá formát</Badge> striktní párování
-            </span>
-            <span className="flex items-center gap-2">
-              <Badge variant="secondary">Volný text</Badge> bez striktní kontroly
-            </span>
+          <div className="mt-3 grid gap-3 sm:grid-cols-3">
+            {OPS.entries.map((entry) => (
+              <div key={entry.title} className="rounded-lg border bg-muted/40 px-3 py-2.5">
+                <div className="text-sm font-semibold">{entry.title}</div>
+                <code className="mt-1 inline-block rounded bg-muted px-2 py-1 text-xs">
+                  {entry.descriptionFormat}
+                </code>
+              </div>
+            ))}
           </div>
         </CardContent>
       </Card>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        {TRACKING_GUIDE.map((category) => (
-          <CategoryCard key={category.key} category={category} />
+      {/* Other categories — free text, one short line each */}
+      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        Ostatní projekty — popis volný
+      </p>
+      <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-5">
+        {OTHERS.map((cat) => (
+          <Card key={cat.key} className="border">
+            <CardContent className="px-3 py-2.5">
+              <div className="flex items-center gap-1.5 text-sm font-semibold">
+                <Dot color={cat.color} />
+                {cat.label}
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">{cat.summary}</p>
+            </CardContent>
+          </Card>
         ))}
       </div>
     </div>
@@ -784,7 +731,7 @@ Expected: no errors.
 
 - [ ] **Step 5: Manual visual check**
 
-Run `npm run dev`, open `http://localhost:3000/tracking-guide`. Verify: "Tracking Guide" appears in the nav; 6 colored cards render; OPS shows the "Systém hlídá formát" badge, the others "Volný text"; layout is 2 columns on desktop, 1 on mobile (narrow the window).
+Run `npm run dev`, open `http://localhost:3000/tracking-guide`. Verify: "Tracking Guide" appears in the nav; the prominent OPS hero card shows the `formát hlídá systém` badge and three format boxes (Hiring/Jobs/Reviews); below it a row of 5 small "ostatní projekty" cards each with a color dot + one-line summary; the OPS format boxes collapse to 1 column and the mini-cards to 2 columns on a narrow window.
 
 - [ ] **Step 6: Commit**
 
@@ -814,7 +761,6 @@ git commit -m "feat: add Tracking Guide page, layout, and nav item"
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
 
 interface BreakdownRow {
   projectCategory: string
@@ -867,15 +813,11 @@ export function ActivityLookup() {
   }, [query])
 
   return (
-    <Card className="mb-6">
+    <Card className="mt-6">
       <CardHeader>
         <CardTitle>Kam to patří?</CardTitle>
-        <p className="text-sm text-muted-foreground">
-          Napiš konkrétní aktivitu (např. <code>DesignOps status</code>) a zjisti, kam ji tým
-          obvykle správně trackuje.
-        </p>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3">
         <Input
           placeholder="DesignOps status, Demo day…"
           value={query}
@@ -885,85 +827,40 @@ export function ActivityLookup() {
         {loading && <p className="text-sm text-muted-foreground">Hledám…</p>}
 
         {result && (
-          <div className="space-y-3">
+          <div className="space-y-1">
             {result.recommendation ? (
-              <p className="text-lg">
-                → Patří do{" "}
-                <strong>{result.recommendation.project ?? result.recommendation.projectCategory}</strong>{" "}
-                <span className="text-muted-foreground">({result.recommendation.projectCategory})</span>
+              <p className="text-base">
+                →{" "}
+                <strong className="text-teal-700">{result.recommendation.projectCategory}</strong>
+                {result.recommendation.project ? ` · ${result.recommendation.project}` : ""}
               </p>
             ) : (
               <p className="text-sm text-muted-foreground">
-                Pro tenhle dotaz nemáme čistě spárované záznamy — řiď se pravidly v kartách níže.
+                Pro tenhle dotaz nemáme čistě spárované záznamy — řiď se pravidly nahoře.
               </p>
             )}
 
             {result.warning.unpairedCount > 0 && (
               <p className="text-sm text-amber-600">
                 ⚠️ {result.warning.unpairedCount} záznamů ({Math.round(result.warning.unpairedHours)} h)
-                bylo natrackováno špatně (Unpaired).
+                šlo omylem jinam.
               </p>
-            )}
-
-            {result.breakdown.length > 0 && (
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-left text-muted-foreground">
-                    <th className="py-1">Kategorie</th>
-                    <th>Záznamů</th>
-                    <th>Hodin</th>
-                    <th>Z toho špatně</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {result.breakdown.map((b) => (
-                    <tr key={b.projectCategory} className="border-t">
-                      <td className="py-1">{b.projectCategory}</td>
-                      <td>{b.entryCount}</td>
-                      <td>{Math.round(b.totalHours)}</td>
-                      <td>{b.unpairedCount}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-
-            {result.examples.length > 0 && (
-              <div className="text-sm text-muted-foreground">
-                <p className="font-medium">Příklady správného trackování:</p>
-                <ul className="list-disc list-inside">
-                  {result.examples.map((ex, i) => (
-                    <li key={i}>
-                      {ex.projectName}
-                      {ex.description ? ` — ${ex.description}` : ""}
-                    </li>
-                  ))}
-                </ul>
-              </div>
             )}
           </div>
         )}
 
         {!result && common.length > 0 && (
-          <div className="space-y-2">
-            <p className="text-sm font-medium">Časté aktivity:</p>
-            <div className="flex flex-wrap gap-2">
-              {common.map((c) => (
-                <button
-                  key={c.activityName}
-                  type="button"
-                  onClick={() => setQuery(c.activityName)}
-                  className="rounded-full border px-3 py-1 text-sm hover:bg-muted"
-                >
-                  {c.activityName}
-                  {c.projectCategory && (
-                    <Badge variant="secondary" className="ml-2">
-                      {c.projectCategory}
-                    </Badge>
-                  )}
-                </button>
-              ))}
-            </div>
+          <div className="flex flex-wrap gap-2">
+            {common.map((c) => (
+              <button
+                key={c.activityName}
+                type="button"
+                onClick={() => setQuery(c.activityName)}
+                className="rounded-full border px-3 py-1 text-sm hover:bg-muted"
+              >
+                {c.activityName}
+              </button>
+            ))}
           </div>
         )}
       </CardContent>
@@ -980,12 +877,16 @@ In `app/tracking-guide/page.tsx`, add the import at the top:
 import { ActivityLookup } from "@/components/tracking-guide/activity-lookup"
 ```
 
-Insert `<ActivityLookup />` directly after the legend card and before the `<div className="grid ...">` block:
+Mount `<ActivityLookup />` at the **bottom** — right after the "Ostatní projekty" grid `</div>`, just before the page's closing `</div>`:
 
 ```tsx
-      <ActivityLookup />
+        ))}
+      </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <ActivityLookup />
+    </div>
+  )
+}
 ```
 
 - [ ] **Step 3: Typecheck**
@@ -995,7 +896,7 @@ Expected: no errors.
 
 - [ ] **Step 4: Manual visual check**
 
-Run `npm run dev`, open `/tracking-guide`. Verify: the "Kam to patří?" card shows "Časté aktivity" chips on load; typing `DesignOps status` shows a recommendation (or the "no clean matches" message), a breakdown table, and the ⚠️ warning when applicable; clicking a chip fills the input and runs the lookup.
+Run `npm run dev`, open `/tracking-guide`. Verify: the "Kam to patří?" card sits below the cards and shows common-activity chips on load; typing `DesignOps status` shows a one-line recommendation (or the "no clean matches" message) plus the ⚠️ one-line warning when applicable; clicking a chip fills the input and runs the lookup.
 
 - [ ] **Step 5: Run the full test suite + commit**
 
