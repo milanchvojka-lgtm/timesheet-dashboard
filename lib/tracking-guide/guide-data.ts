@@ -56,9 +56,9 @@ export const TRACKING_GUIDE: TrackingCategory[] = [
     color: '#f59e0b',
     strict: false,
     intro: 'Volný text — popisuj název úkolu.',
-    summary: 'Název úkolu',
+    summary: 'Sprinty, inovace, ladění',
     entries: [
-      { title: 'R&D', descriptionFormat: 'Název úkolu', belongsHere: 'Inovace a ladění postupů designu v 2F.' },
+      { title: 'R&D', descriptionFormat: 'Název úkolu', belongsHere: 'Sprint planning / demo / review, inovace a ladění postupů designu v 2F.' },
     ],
   },
   {

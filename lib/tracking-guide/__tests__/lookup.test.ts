@@ -65,3 +65,40 @@ describe('buildRecommendation', () => {
     expect(result.examples).toEqual([])
   })
 })
+
+describe('buildRecommendation with an editorial override', () => {
+  const historicallyInternal: LookupCandidate[] = [
+    { projectName: 'Design tým interní', projectCategory: 'Internal', activityName: 'sprint planning', description: '', hours: 40, isUnpaired: false },
+  ]
+
+  it('override wins over historical data and surfaces the previous category', () => {
+    const result = buildRecommendation(historicallyInternal, 'R&D')
+    expect(result.recommendation?.projectCategory).toBe('R&D')
+    expect(result.recommendation?.project).toBe('Design tým R&D')
+    expect(result.recommendation?.overridden).toBe(true)
+    expect(result.recommendation?.previousCategory).toBe('Internal')
+  })
+
+  it('applies even when there is no matching history', () => {
+    const result = buildRecommendation([], 'R&D')
+    expect(result.recommendation?.projectCategory).toBe('R&D')
+    expect(result.recommendation?.overridden).toBe(true)
+    expect(result.recommendation?.previousCategory).toBeNull()
+  })
+
+  it('shows no previousCategory when history already matches the override', () => {
+    const alreadyRnd: LookupCandidate[] = [
+      { projectName: 'Design tým R&D', projectCategory: 'R&D', activityName: 'sprint', description: '', hours: 10, isUnpaired: false },
+    ]
+    const result = buildRecommendation(alreadyRnd, 'R&D')
+    expect(result.recommendation?.overridden).toBe(true)
+    expect(result.recommendation?.previousCategory).toBeNull()
+  })
+
+  it('without an override, recommendation is not flagged as overridden', () => {
+    const result = buildRecommendation(historicallyInternal)
+    expect(result.recommendation?.projectCategory).toBe('Internal')
+    expect(result.recommendation?.overridden).toBe(false)
+    expect(result.recommendation?.previousCategory).toBeNull()
+  })
+})

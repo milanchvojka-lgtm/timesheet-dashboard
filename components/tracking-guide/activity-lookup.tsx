@@ -12,7 +12,13 @@ interface BreakdownRow {
   unpairedCount: number
 }
 interface LookupResult {
-  recommendation: { projectCategory: string; project: string | null; guideKey: string | null } | null
+  recommendation: {
+    projectCategory: string
+    project: string | null
+    guideKey: string | null
+    overridden: boolean
+    previousCategory: string | null
+  } | null
   breakdown: BreakdownRow[]
   warning: { unpairedCount: number; unpairedHours: number }
   examples: { projectName: string; description: string | null }[]
@@ -58,6 +64,11 @@ export function ActivityLookup() {
                 →{" "}
                 <strong className="text-teal-700">{result.recommendation.projectCategory}</strong>
                 {result.recommendation.project ? ` · ${result.recommendation.project}` : ""}
+                {result.recommendation.previousCategory && (
+                  <span className="text-muted-foreground">
+                    {" "}(nově — historicky šlo na {result.recommendation.previousCategory})
+                  </span>
+                )}
               </p>
             ) : (
               <p className="text-sm text-muted-foreground">

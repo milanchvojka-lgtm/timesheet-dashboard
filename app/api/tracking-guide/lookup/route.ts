@@ -9,6 +9,7 @@ import {
   buildRecommendation,
   type LookupCandidate,
 } from '@/lib/tracking-guide/lookup'
+import { resolveOverride } from '@/lib/tracking-guide/overrides'
 
 interface EntryRow {
   project_name: string
@@ -125,7 +126,8 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    return NextResponse.json(buildRecommendation(candidates))
+    const override = resolveOverride(normalizedQuery)
+    return NextResponse.json(buildRecommendation(candidates, override))
   } catch (error) {
     console.error('[API] tracking-guide lookup error:', error)
     return NextResponse.json(

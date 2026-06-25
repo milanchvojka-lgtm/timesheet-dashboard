@@ -20,6 +20,8 @@ export interface LookupRecommendation {
   projectCategory: string
   project: string | null
   guideKey: string | null
+  overridden: boolean // true when an editorial override decided this, not history
+  previousCategory: string | null // where history sent it, when that differs from an override
 }
 
 export interface LookupResult {
@@ -52,7 +54,16 @@ export function matchesQuery(
   return haystack.includes(normalizedQuery)
 }
 
-export function buildRecommendation(candidates: LookupCandidate[]): LookupResult {
+/**
+ * Build the lookup result. `overrideCategory` (an editorial "track it here now"
+ * rule) takes precedence over the historical data: when set, it becomes the
+ * recommendation regardless of history, and the dominant historical category —
+ * if different — is surfaced as `previousCategory` ("historicky šlo na X").
+ */
+export function buildRecommendation(
+  candidates: LookupCandidate[],
+  overrideCategory?: string | null
+): LookupResult {
   const byCategory = new Map<string, BreakdownRow>()
   const cleanHoursByCategory = new Map<string, number>()
   let unpairedCount = 0
@@ -88,12 +99,25 @@ export function buildRecommendation(candidates: LookupCandidate[]): LookupResult
       bestCategory = category
     }
   }
-  if (bestCategory) {
+  if (overrideCategory) {
+    // Editorial override wins, even when there is no matching history at all.
+    const guide = getGuideByProjectCategory(overrideCategory)
+    recommendation = {
+      projectCategory: overrideCategory,
+      project: guide?.project ?? null,
+      guideKey: guide?.key ?? null,
+      overridden: true,
+      previousCategory:
+        bestCategory && bestCategory !== overrideCategory ? bestCategory : null,
+    }
+  } else if (bestCategory) {
     const guide = getGuideByProjectCategory(bestCategory)
     recommendation = {
       projectCategory: bestCategory,
       project: guide?.project ?? null,
       guideKey: guide?.key ?? null,
+      overridden: false,
+      previousCategory: null,
     }
   }
 
