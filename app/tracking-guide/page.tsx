@@ -2,6 +2,7 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { TRACKING_GUIDE } from "@/lib/tracking-guide/guide-data"
+import { ActivityLookup } from "@/components/tracking-guide/activity-lookup"
 
 const OPS = TRACKING_GUIDE.find((c) => c.key === "ops")!
 const OTHERS = TRACKING_GUIDE.filter((c) => c.key !== "ops")
@@ -64,6 +65,8 @@ export default function TrackingGuidePage() {
           </Card>
         ))}
       </div>
+
+      <ActivityLookup />
     </div>
   )
 }
