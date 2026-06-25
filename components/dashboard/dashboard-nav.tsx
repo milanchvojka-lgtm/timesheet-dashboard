@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { Upload, TrendingUp, CheckCircle, Settings, HelpCircle, Users } from "lucide-react"
+import { Upload, TrendingUp, CheckCircle, Settings, HelpCircle, Users, Map } from "lucide-react"
 
 interface NavItem {
   title: string
@@ -42,6 +42,12 @@ const allNavItems: NavItem[] = [
     href: "/admin",
     icon: Settings,
     requiresTeamMember: true, // Team members only
+  },
+  {
+    title: "Tracking Guide",
+    href: "/tracking-guide",
+    icon: Map,
+    requiresTeamMember: false, // Everyone can access
   },
   {
     title: "Help",
