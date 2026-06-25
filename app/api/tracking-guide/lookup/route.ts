@@ -34,6 +34,7 @@ export async function GET(request: NextRequest) {
       const { data, error } = await supabase
         .from('timesheet_entries')
         .select('activity_name, project_category, hours')
+        .limit(10000)
       if (error) throw error
 
       const agg = new Map<
@@ -84,7 +85,11 @@ export async function GET(request: NextRequest) {
     const keywords = (keywordsData ?? []) as ActivityKeyword[]
 
     // Broad pre-filter on the first token, then refine with normalized matching in JS.
-    const firstToken = normalizedQuery.split(' ')[0]
+    const firstToken = normalizedQuery.split(' ')[0].replace(/[^a-z0-9]/gi, '')
+    // If sanitization resulted in empty token, return empty results for consistency.
+    if (!firstToken) {
+      return NextResponse.json(buildRecommendation([]))
+    }
     const { data: entries, error: entriesError } = await supabase
       .from('timesheet_entries')
       .select('project_name, project_category, activity_name, description, hours')
